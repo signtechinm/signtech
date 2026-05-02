@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS site_content (
+  key TEXT PRIMARY KEY,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS site_content_value_idx ON site_content USING GIN (value);
+
+CREATE TABLE IF NOT EXISTS admin_users (
+  id BIGSERIAL PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  salt TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'admin',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

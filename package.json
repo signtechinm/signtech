@@ -1,0 +1,23 @@
+{
+  "name": "signtech-react",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "api": "node server/index.js",
+    "db:schema": "psql \"$DATABASE_URL\" -f server/schema.sql",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "vite": "^7.0.0"
+  }
+}
