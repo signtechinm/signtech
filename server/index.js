@@ -2,12 +2,18 @@ import "dotenv/config";
 import cors from "cors";
 import crypto from "node:crypto";
 import express from "express";
+import fs from "node:fs/promises";
+import path from "node:path";
 import pg from "pg";
+import { createServer as createViteServer } from "vite";
 import { defaultContent } from "./default-content.js";
 
 const { Pool } = pg;
 const app = express();
-const port = process.env.API_PORT || 4000;
+const isProduction = process.env.NODE_ENV === "production";
+const port = process.env.PORT || process.env.APP_PORT || 5173;
+const rootDir = process.cwd();
+const distDir = path.join(rootDir, "dist");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -16,9 +22,20 @@ const sessions = new Map();
 const sessionTtlMs = 1000 * 60 * 60 * 8;
 const adminUsername = process.env.ADMIN_USERNAME || "admin";
 const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+const uploadDir = path.join(rootDir, "public", "uploads");
+const imageExtensions = {
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+  "image/webp": ".webp",
+  "image/svg+xml": ".svg",
+};
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://127.0.0.1:5173" }));
+if (process.env.CLIENT_ORIGIN) {
+  app.use(cors({ origin: process.env.CLIENT_ORIGIN }));
+}
+
 app.use(express.json({ limit: "1mb" }));
+app.use("/uploads", express.static(uploadDir));
 
 async function ensureSchema() {
   await pool.query(`
@@ -48,15 +65,20 @@ async function ensureSchema() {
     );
   }
 
-  const existingAdmin = await pool.query("SELECT id FROM admin_users WHERE username = $1", [adminUsername]);
-  if (existingAdmin.rowCount === 0) {
-    const { hash, salt } = await hashPassword(adminPassword);
-    await pool.query(
-      `INSERT INTO admin_users (username, password_hash, salt)
-       VALUES ($1, $2, $3)`,
-      [adminUsername, hash, salt]
-    );
-  }
+  await ensureAdminUser();
+}
+
+async function ensureAdminUser() {
+  const { hash, salt } = await hashPassword(adminPassword);
+  await pool.query(
+    `INSERT INTO admin_users (username, password_hash, salt, updated_at)
+     VALUES ($1, $2, $3, NOW())
+     ON CONFLICT (username)
+     DO UPDATE SET password_hash = EXCLUDED.password_hash,
+                   salt = EXCLUDED.salt,
+                   updated_at = NOW()`,
+    [adminUsername, hash, salt]
+  );
 }
 
 async function readAllContent() {
@@ -176,6 +198,37 @@ app.get("/api/admin/content", requireAuth, async (_request, response) => {
   }
 });
 
+app.post(
+  "/api/admin/upload-logo",
+  requireAuth,
+  express.raw({ type: Object.keys(imageExtensions), limit: "2mb" }),
+  async (request, response) => {
+    const contentType = request.headers["content-type"]?.split(";")[0];
+    const extension = imageExtensions[contentType];
+
+    if (!extension || !Buffer.isBuffer(request.body) || request.body.length === 0) {
+      response.status(400).json({ error: "Upload a PNG, JPG, WebP, or SVG logo." });
+      return;
+    }
+
+    const originalName = request.headers["x-file-name"] || "logo";
+    const safeName = path
+      .basename(originalName, path.extname(originalName))
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "logo";
+    const fileName = `${Date.now()}-${crypto.randomBytes(4).toString("hex")}-${safeName}${extension}`;
+
+    try {
+      await fs.mkdir(uploadDir, { recursive: true });
+      await fs.writeFile(path.join(uploadDir, fileName), request.body);
+      response.json({ path: `/uploads/${fileName}` });
+    } catch (error) {
+      response.status(500).json({ error: error.message });
+    }
+  }
+);
+
 app.put("/api/admin/content", requireAuth, async (request, response) => {
   const content = request.body;
 
@@ -206,13 +259,32 @@ app.put("/api/admin/content", requireAuth, async (request, response) => {
   }
 });
 
-ensureSchema()
-  .then(() => {
-    app.listen(port, () => {
-      console.log(`Signtech API listening on http://127.0.0.1:${port}`);
+async function mountClient() {
+  if (isProduction) {
+    app.use(express.static(distDir));
+    app.get(/.*/, (_request, response) => {
+      response.sendFile(path.join(distDir, "index.html"));
     });
-  })
-  .catch((error) => {
-    console.error("Could not start Signtech API:", error);
-    process.exit(1);
+    return;
+  }
+
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: "spa",
   });
+  app.use(vite.middlewares);
+}
+
+async function startServer() {
+  await ensureSchema();
+  await mountClient();
+
+  app.listen(port, "127.0.0.1", () => {
+    console.log(`Signtech app listening on http://127.0.0.1:${port}`);
+  });
+}
+
+startServer().catch((error) => {
+  console.error("Could not start Signtech app:", error);
+  process.exit(1);
+});

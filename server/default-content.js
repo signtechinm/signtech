@@ -3,7 +3,9 @@ export const defaultContent = {
     company: "Signtech Info & Marketing",
     tagline: "Web development, digital marketing, API development, and graphic design.",
     email: "hello@signtechinm.com",
-    phone: "+91 00000 00000"
+    phone: "+91 00000 00000",
+    lightLogo: "/assets/logo.png",
+    darkLogo: "/assets/logo.png"
   },
   home: {
     eyebrow: "Signtech Info & Marketing",
@@ -11,7 +13,7 @@ export const defaultContent = {
     body: "Signtech is a digital solutions provider with 5 years of experience in web development, digital marketing, API development, and graphic design.",
     primaryCta: "Explore Services",
     secondaryCta: "Know More",
-    heroImage: "/assets/hero-dashboard.png"
+    heroImage: "/assets/generated-hero-dashboard.png"
   },
   intro: {
     eyebrow: "Smarter business growth",
@@ -22,42 +24,42 @@ export const defaultContent = {
     {
       title: "Web Apps",
       copy: "Responsive, fast applications built around your workflow, users, and growth plan.",
-      image: "/assets/hero-dashboard.png"
+      image: "/assets/generated-service-web-apps.png"
     },
     {
       title: "Mobile Apps",
       copy: "Cross-platform mobile experiences with clean interfaces and dependable delivery.",
-      image: "/assets/service-ecommerce.png"
+      image: "/assets/generated-service-mobile-apps.png"
     },
     {
       title: "Custom Software",
       copy: "Practical business tools that reduce manual work and connect your operations.",
-      image: "/assets/about-collage.png"
+      image: "/assets/generated-service-custom-software.png"
     },
     {
       title: "Website Design",
       copy: "Modern websites that feel polished, trustworthy, and easy for visitors to use.",
-      image: "/assets/service-design.png"
+      image: "/assets/generated-service-website-design.png"
     },
     {
       title: "Ecommerce Development",
       copy: "Stores, carts, catalogs, and checkout flows designed for smooth selling.",
-      image: "/assets/service-ecommerce.png"
+      image: "/assets/generated-service-ecommerce.png"
     },
     {
       title: "API Development",
       copy: "Secure integrations and APIs that keep platforms, apps, and teams connected.",
-      image: "/assets/service-api.png"
+      image: "/assets/generated-service-api.png"
     },
     {
       title: "Digital Marketing",
       copy: "Campaigns and online strategy to grow visibility, traffic, and qualified leads.",
-      image: "/assets/service-marketing.png"
+      image: "/assets/generated-service-marketing.png"
     },
     {
       title: "Graphic Design",
       copy: "Brand visuals, creative assets, and communication design with a clear purpose.",
-      image: "/assets/service-design.png"
+      image: "/assets/generated-service-graphic-design.png"
     }
   ],
   about: {
@@ -65,7 +67,7 @@ export const defaultContent = {
     headline: "Founded in 2020, built around reliability and innovation.",
     body: "Signtech has grown into a trusted name in the digital solutions space, delivering web development, digital marketing, API integration, and graphic design services for clients across industries.",
     secondBody: "We transform ideas into impactful digital experiences by blending technology with creativity, so every project meets both functional and visual goals.",
-    image: "/assets/about-collage.png"
+    image: "/assets/hero-dashboard.png"
   },
   mission: {
     missionHeadline: "Empower businesses through innovative digital solutions.",

@@ -1,6 +1,6 @@
 # Signtech React
 
-React/Vite rebuild of the Signtech website with shadcn-style UI primitives, separate public pages, an admin panel, and a PostgreSQL-backed content API.
+React/Vite rebuild of the Signtech website with shadcn-style UI primitives, public pages, an admin panel, and a PostgreSQL-backed content API served from one app port.
 
 ## Run locally
 
@@ -22,13 +22,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-4. Start the API:
-
-```bash
-npm run api
-```
-
-5. Start the React app in another terminal:
+4. Start the website, admin panel, and API together:
 
 ```bash
 npm run dev
@@ -40,7 +34,7 @@ Open `http://127.0.0.1:5173/`.
 
 Open `http://127.0.0.1:5173/admin`.
 
-The admin panel edits the same content used by the public pages and saves it to the `site_content` PostgreSQL table as JSONB.
+The admin panel edits the same content used by the public pages and saves it through `/api/admin/*` on the same port.
 
 ## Database
 

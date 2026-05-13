@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Badge, Button, Card, CardContent, CardHeader, Input, Select, Tabs, Textarea } from "./ui.jsx";
 import { defaultContent, mergeContent } from "./content.js";
@@ -6,10 +6,97 @@ import "./styles.css";
 
 const routes = [
   { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/services", label: "Services" },
 ];
+
+const CAPABILITY_STICKY_START = 0.14;
+const CAPABILITY_STICKY_END = 0.8;
+const CAPABILITY_SCROLL_END = 0.68;
+
+const generatedServiceImages = {
+  "web-apps": "/assets/generated-service-web-apps.png",
+  "mobile-apps": "/assets/generated-service-mobile-apps.png",
+  "custom-software": "/assets/generated-service-custom-software.png",
+  "website-design": "/assets/generated-service-website-design.png",
+  "ecommerce-development": "/assets/generated-service-ecommerce.png",
+  "api-development": "/assets/generated-service-api.png",
+  "digital-marketing": "/assets/generated-service-marketing.png",
+  "graphic-design": "/assets/generated-service-graphic-design.png",
+};
+
+function serviceSlug(title) {
+  return title
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function serviceImage(service) {
+  return generatedServiceImages[serviceSlug(service.title)] || service.image;
+}
+
+function getServiceDetails(service) {
+  const title = service?.title || "Digital Service";
+  const details = {
+    "web-apps": {
+      headline: "Fast, responsive web applications built around real business workflows.",
+      intro: "We plan, design, and build web apps that help teams manage customers, orders, content, bookings, dashboards, and internal operations with less friction.",
+      deliverables: ["User flows and screen architecture", "Responsive frontend development", "Admin panels and dashboards", "API and database integration"],
+      outcomes: ["A cleaner customer or staff experience", "Faster everyday operations", "A scalable foundation for new features"],
+    },
+    "mobile-apps": {
+      headline: "Mobile app experiences designed for daily use on modern devices.",
+      intro: "We create practical mobile apps for customers, teams, and service operations, with clean navigation and reliable connections to your backend systems.",
+      deliverables: ["App structure and interface design", "Cross-platform mobile development", "Authentication and user accounts", "Push-ready architecture and API integration"],
+      outcomes: ["A mobile channel your users can rely on", "Consistent brand experience across devices", "A launch-ready app workflow"],
+    },
+    "custom-software": {
+      headline: "Custom software that replaces repetitive manual work with connected tools.",
+      intro: "We build focused business software for operations that spreadsheets, disconnected apps, and manual follow-ups can no longer handle well.",
+      deliverables: ["Workflow mapping", "Role-based admin tools", "Database-backed business logic", "Reporting and approval flows"],
+      outcomes: ["Less duplicate data entry", "Better visibility across teams", "Software shaped around how your business actually works"],
+    },
+    "website-design": {
+      headline: "Modern websites that feel trustworthy, clear, and easy to use.",
+      intro: "We design websites that communicate your offer quickly, guide visitors toward action, and give your brand a polished digital presence.",
+      deliverables: ["Page structure and content planning", "Responsive UI design", "Landing pages and service pages", "Performance-conscious frontend build"],
+      outcomes: ["A stronger first impression", "Clearer service communication", "Better paths from visitor interest to enquiry"],
+    },
+    "ecommerce-development": {
+      headline: "Ecommerce experiences built to make browsing, carts, and checkout smoother.",
+      intro: "We create online stores and commerce workflows that help customers find products, understand offers, and complete purchases with confidence.",
+      deliverables: ["Catalog and product page setup", "Cart and checkout flow planning", "Payment and platform integration", "Store management workflows"],
+      outcomes: ["A smoother buying journey", "Better product presentation", "A store your team can keep managing"],
+    },
+    "api-development": {
+      headline: "Secure APIs and integrations that keep your platforms connected.",
+      intro: "We design and build APIs that move data between apps, websites, admin systems, ecommerce platforms, CRMs, and third-party services.",
+      deliverables: ["API architecture", "Authentication and access control", "Third-party integrations", "Documentation and testing support"],
+      outcomes: ["Connected systems with fewer manual transfers", "Cleaner data flow between tools", "A stronger backend for apps and websites"],
+    },
+    "digital-marketing": {
+      headline: "Digital marketing that improves visibility, traffic, and qualified enquiries.",
+      intro: "We help shape campaigns, content, and online activity around measurable business goals rather than scattered posting or ad spend.",
+      deliverables: ["Campaign planning", "Landing page direction", "Creative and content support", "Performance review and improvement cycles"],
+      outcomes: ["Clearer campaign direction", "More useful traffic", "A repeatable marketing workflow"],
+    },
+    "graphic-design": {
+      headline: "Graphic design assets that make your brand communication sharper.",
+      intro: "We create practical brand visuals for digital campaigns, social media, websites, sales material, and everyday business communication.",
+      deliverables: ["Brand and campaign creatives", "Social media visuals", "Digital banners and website assets", "Presentation and marketing collateral"],
+      outcomes: ["More consistent brand communication", "Better-looking campaign material", "Reusable visuals for your team"],
+    },
+  };
+
+  return details[serviceSlug(title)] || {
+    headline: `${title} shaped around your goals, users, and growth plan.`,
+    intro: service?.copy || "We plan and deliver the right digital service with clear scope, polished execution, and practical support after launch.",
+    deliverables: ["Discovery and planning", "Design and implementation", "Testing and launch support", "Iteration after release"],
+    outcomes: ["A clearer digital workflow", "A more polished customer experience", "A solution your team can build on"],
+  };
+}
 
 function useRoute() {
   const [path, setPath] = useState(window.location.pathname);
@@ -73,6 +160,21 @@ async function fetchAdminContent() {
   return response.json();
 }
 
+async function uploadLogo(file) {
+  const token = localStorage.getItem("signtech-admin-token");
+  const response = await fetch("/api/admin/upload-logo", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": file.type,
+      "X-File-Name": file.name,
+    },
+    body: file,
+  });
+  if (!response.ok) throw new Error("Could not upload logo");
+  return response.json();
+}
+
 async function loginAdmin(username, password) {
   const response = await fetch("/api/auth/login", {
     method: "POST",
@@ -92,11 +194,13 @@ async function logoutAdmin() {
 }
 
 function Layout({ children, content, navigate, path, theme, setTheme }) {
+  const logo = theme === "dark" ? content.settings.darkLogo : content.settings.lightLogo;
+
   return (
     <>
       <header className="site-header">
         <AppLink className="brand" href="/" navigate={navigate}>
-          <img src="/assets/logo.png" alt="Signtech" />
+          <img src={logo || "/assets/logo.png"} alt={content.settings.company} />
         </AppLink>
         <nav aria-label="Primary navigation">
           {routes.map((route) => (
@@ -104,11 +208,14 @@ function Layout({ children, content, navigate, path, theme, setTheme }) {
               {route.label}
             </AppLink>
           ))}
-          <AppLink className={path === "/admin" ? "active" : ""} href="/admin" navigate={navigate}>
-            Admin
-          </AppLink>
         </nav>
         <div className="header-actions">
+          <Button as="a" className="header-action" href="/contact" onClick={(event) => {
+            event.preventDefault();
+            navigate("/contact");
+          }}>
+            Contact Sales
+          </Button>
           <button
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             className="theme-icon-button"
@@ -117,25 +224,240 @@ function Layout({ children, content, navigate, path, theme, setTheme }) {
           >
             <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
           </button>
-          <Button as="a" className="header-action" href="/contact" onClick={(event) => {
-            event.preventDefault();
-            navigate("/contact");
-          }}>
-            Contact Sales
-          </Button>
         </div>
       </header>
       {children}
       <footer>
-        <img src="/assets/logo.png" alt="Signtech" />
+        <img src={logo || "/assets/logo.png"} alt={content.settings.company} />
         <p>{content.settings.tagline}</p>
       </footer>
     </>
   );
 }
 
+function ServiceIcon({ title }) {
+  const key = title.toLowerCase();
+  const icon =
+    key.includes("mobile") ? "mobile" :
+    key.includes("software") ? "workflow" :
+    key.includes("design") ? "palette" :
+    key.includes("ecommerce") ? "cart" :
+    key.includes("api") ? "plug" :
+    key.includes("marketing") ? "megaphone" :
+    key.includes("graphic") ? "pen" :
+    "browser";
+
+  const paths = {
+    browser: (
+      <>
+        <rect x="3" y="4" width="18" height="16" rx="3" />
+        <path d="M3 9h18" />
+        <path d="M8 15l2-2 2 2 4-4" />
+      </>
+    ),
+    mobile: (
+      <>
+        <rect x="7" y="2.5" width="10" height="19" rx="2.5" />
+        <path d="M11 18h2" />
+      </>
+    ),
+    workflow: (
+      <>
+        <rect x="3" y="4" width="7" height="6" rx="1.5" />
+        <rect x="14" y="14" width="7" height="6" rx="1.5" />
+        <path d="M10 7h3.5A3.5 3.5 0 0 1 17 10.5V14" />
+        <path d="M14 17h-3.5A3.5 3.5 0 0 1 7 13.5V10" />
+      </>
+    ),
+    palette: (
+      <>
+        <path d="M12 3a9 9 0 0 0 0 18h1.1a2.2 2.2 0 0 0 1.5-3.8 1.8 1.8 0 0 1 1.2-3.2H17a4 4 0 0 0 0-8.1A8.9 8.9 0 0 0 12 3Z" />
+        <path d="M7.6 10.2h.01" />
+        <path d="M10.2 7.4h.01" />
+        <path d="M14 7.8h.01" />
+      </>
+    ),
+    cart: (
+      <>
+        <path d="M4 5h2l2 10h9.5l2-7H7" />
+        <circle cx="10" cy="19" r="1.5" />
+        <circle cx="17" cy="19" r="1.5" />
+      </>
+    ),
+    plug: (
+      <>
+        <path d="M9 7V3" />
+        <path d="M15 7V3" />
+        <path d="M7 7h10v4a5 5 0 0 1-10 0Z" />
+        <path d="M12 16v5" />
+      </>
+    ),
+    megaphone: (
+      <>
+        <path d="M4 13h3l10 4V5L7 9H4Z" />
+        <path d="M7 13l2 6" />
+        <path d="M19 9.5a3 3 0 0 1 0 3" />
+      </>
+    ),
+    pen: (
+      <>
+        <path d="M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10Z" />
+        <path d="M14 7l3 3" />
+      </>
+    ),
+  };
+
+  return (
+    <svg aria-hidden="true" className="capability-icon" fill="none" viewBox="0 0 24 24">
+      {paths[icon]}
+    </svg>
+  );
+}
+
+function ProcessWaveCanvas() {
+  const canvasRef = useRef(null);
+  const pointerRef = useRef({ x: 0, y: 0, active: false, strength: 0 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+
+    const context = canvas.getContext("2d");
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let width = 0;
+    let height = 0;
+    let pixelRatio = 1;
+    let frame = 0;
+    let animationFrame = 0;
+
+    const resolveProcessWaveColors = () => {
+      const styles = window.getComputedStyle(document.documentElement);
+      return {
+        background: styles.getPropertyValue("--process-wave-bg").trim() || "#061724",
+        dots: styles.getPropertyValue("--process-wave-dot").trim() || "#e2eefa",
+      };
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      width = Math.max(1, Math.floor(rect.width));
+      height = Math.max(1, Math.floor(rect.height));
+      canvas.width = Math.floor(width * pixelRatio);
+      canvas.height = Math.floor(height * pixelRatio);
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    };
+
+    const draw = () => {
+      frame += prefersReducedMotion ? 0 : 0.009;
+      const pointer = pointerRef.current;
+      pointer.strength += ((pointer.active ? 1 : 0) - pointer.strength) * (pointer.active ? 0.12 : 0.035);
+      const colors = resolveProcessWaveColors();
+
+      context.clearRect(0, 0, width, height);
+      context.fillStyle = colors.background;
+      context.fillRect(0, 0, width, height);
+
+      const horizon = height * 0.2;
+      const rows = 52;
+      const cols = 108;
+      const centerX = width * 0.5;
+
+      for (let row = 0; row < rows; row += 1) {
+        const depth = row / (rows - 1);
+        const perspective = depth * depth;
+        const yBase = horizon + perspective * height * 0.95;
+        const spread = width * (0.26 + perspective * 1.08);
+        const stepX = spread / cols;
+        const dotRadius = 0.65 + perspective * 1.15;
+        const rowAlpha = Math.min(0.82, 0.1 + perspective * 0.72);
+
+        for (let col = 0; col <= cols; col += 1) {
+          const normalizedX = col / cols - 0.5;
+          const x = centerX + normalizedX * spread;
+          const ridge =
+            Math.sin(normalizedX * 10.5 + frame * 2.2 + depth * 5.8) * 24 * perspective +
+            Math.sin(normalizedX * 21 - frame * 1.5 + depth * 9.4) * 11 * perspective;
+          const swell = Math.sin(depth * 15.5 - frame * 2.7 + normalizedX * 4) * 36 * perspective;
+          const waveY = yBase + ridge + swell;
+          const dx = x - pointer.x;
+          const dy = waveY - pointer.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const repelRadius = 260;
+          const repelForce =
+            pointer.strength *
+            Math.pow(Math.max(0, 1 - distance / repelRadius), 2) *
+            86 *
+            (0.55 + perspective);
+          const repelX = distance > 0 ? (dx / distance) * repelForce : 0;
+          const repelY = distance > 0 ? (dy / distance) * repelForce : -repelForce;
+          const y = waveY + repelY;
+          const dotX = x + repelX;
+          const edgeFade = Math.max(0, 1 - Math.abs(normalizedX) * 1.7);
+          const alpha = rowAlpha * edgeFade;
+
+          if (alpha <= 0.02) continue;
+          context.beginPath();
+          context.globalAlpha = alpha;
+          context.fillStyle = colors.dots;
+          context.arc(dotX, y, dotRadius, 0, Math.PI * 2);
+          context.fill();
+          context.globalAlpha = 1;
+        }
+      }
+
+      if (!prefersReducedMotion) {
+        animationFrame = window.requestAnimationFrame(draw);
+      }
+    };
+
+    const updatePointer = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      pointerRef.current.x = x;
+      pointerRef.current.y = y;
+      pointerRef.current.active = x >= 0 && x <= rect.width && y >= 0 && y <= rect.height;
+    };
+
+    const leavePointer = () => {
+      pointerRef.current.active = false;
+    };
+
+    resize();
+    draw();
+    const observer = new MutationObserver(() => {
+      if (prefersReducedMotion) draw();
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("pointermove", updatePointer);
+    window.addEventListener("pointerleave", leavePointer);
+
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("pointermove", updatePointer);
+      window.removeEventListener("pointerleave", leavePointer);
+    };
+  }, []);
+
+  return <canvas className="process-wave-canvas" ref={canvasRef} aria-hidden="true" />;
+}
+
 function HomePage({ content, navigate }) {
   const featuredServices = content.services.slice(0, 6);
+  const heroTechIcons = content.tech.slice(0, 7);
+  const heroRef = useRef(null);
+  const capabilitiesRef = useRef(null);
+  const capabilityTrackRef = useRef(null);
+  const [isCapabilitySticky, setIsCapabilitySticky] = useState(false);
   const timelineItems = [
     ["home-hero", "Hero"],
     ["home-capabilities", "Capabilities"],
@@ -171,7 +493,80 @@ function HomePage({ content, navigate }) {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    let frame = 0;
+
+    const updateCapabilityScroll = () => {
+      frame = 0;
+      const maxScroll = Math.max(
+        1,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+      const scrollY = Math.min(maxScroll, Math.max(0, window.scrollY));
+      const pageProgress = scrollY / maxScroll;
+      setIsCapabilitySticky(
+        window.innerWidth > 860 &&
+        pageProgress >= CAPABILITY_STICKY_START &&
+        pageProgress <= CAPABILITY_STICKY_END
+      );
+
+      const section = capabilitiesRef.current;
+      const track = capabilityTrackRef.current;
+      const viewport = track?.parentElement;
+      if (!section || !track || !viewport) return;
+
+      const progress = Math.min(
+        1,
+        Math.max(
+          0,
+          (pageProgress - CAPABILITY_STICKY_START) /
+            (CAPABILITY_SCROLL_END - CAPABILITY_STICKY_START)
+        )
+      );
+      const cards = Array.from(track.children);
+      const gap = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft - cards[0].offsetWidth : 0;
+      const pairWidth = cards[0] ? (cards[0].offsetWidth + gap) * 2 : 0;
+      const maxShift = Math.max(0, track.scrollWidth - viewport.clientWidth);
+      const scrollRunway = Math.max(window.innerHeight * 1.35, maxShift * 1.05);
+      section.style.setProperty("--capability-scroll-space", `${scrollRunway}px`);
+      const maxPairIndex = Math.max(1, Math.ceil(maxShift / Math.max(1, pairWidth)));
+      const pairProgress = progress * maxPairIndex;
+      const basePair = Math.floor(pairProgress);
+      const localProgress = pairProgress - basePair;
+      const easedLocalProgress = localProgress < 0.5
+        ? 2 * localProgress * localProgress
+        : 1 - Math.pow(-2 * localProgress + 2, 2) / 2;
+      const shiftedPairProgress = Math.min(maxPairIndex, basePair + easedLocalProgress);
+      const shift = Math.min(maxShift, shiftedPairProgress * pairWidth);
+      track.style.transform = `translate3d(${-shift}px, 0, 0)`;
+      section.style.setProperty("--capability-progress", progress.toFixed(3));
+    };
+
+    const requestUpdate = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateCapabilityScroll);
+    };
+
+    updateCapabilityScroll();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+    };
+  }, []);
+
   const activeIndex = Math.max(0, timelineItems.findIndex(([id]) => id === activeSection));
+
+  const updateHeroPointer = (event) => {
+    const hero = heroRef.current;
+    if (!hero) return;
+    const rect = hero.getBoundingClientRect();
+    hero.style.setProperty("--hero-pointer-x", `${event.clientX - rect.left}px`);
+    hero.style.setProperty("--hero-pointer-y", `${event.clientY - rect.top}px`);
+  };
 
   return (
     <main className="home-redesign">
@@ -183,7 +578,15 @@ function HomePage({ content, navigate }) {
         ))}
       </nav>
 
-      <section className="home-hero section-pad" id="home-hero">
+      <section className="home-hero section-pad" id="home-hero" onPointerMove={updateHeroPointer} ref={heroRef}>
+        <div className="hero-check-overlay" aria-hidden="true" />
+        <div className="hero-tech-icons" aria-hidden="true">
+          {heroTechIcons.map(([name, image], index) => (
+            <span className="hero-tech-icon" key={`${name}-${index}`}>
+              <img src={image} alt="" />
+            </span>
+          ))}
+        </div>
         <div className="hero-particles" aria-hidden="true">
           {Array.from({ length: 18 }).map((_, index) => (
             <span key={index} />
@@ -213,39 +616,57 @@ function HomePage({ content, navigate }) {
         </div>
       </section>
 
-      <section className="home-capabilities section-pad" id="home-capabilities">
-        <div className="section-heading centered">
-          <Badge>Capabilities</Badge>
-          <h2>Everything your digital presence needs, organized into clear workstreams.</h2>
-          <p>{content.home.body}</p>
+      <section
+        className={`home-capabilities ${isCapabilitySticky ? "is-scroll-sticky" : ""}`}
+        id="home-capabilities"
+        ref={capabilitiesRef}
+      >
+        <div className="capability-sticky">
+          <div className="section-heading centered">
+            <Badge>Capabilities</Badge>
+            <h2>Everything your digital presence needs, organized into clear workstreams.</h2>
+            <p>{content.home.body}</p>
+          </div>
+          <div className="capability-viewport">
+            <div className="capability-grid" ref={capabilityTrackRef}>
+              {featuredServices.map((service) => (
+                <Card className="capability-card" key={service.title}>
+                  <CardHeader>
+                    <span className="capability-mark">
+                      <ServiceIcon title={service.title} />
+                    </span>
+                    <h3>{service.title}</h3>
+                  </CardHeader>
+                  <CardContent>
+                    <p>{service.copy}</p>
+                    <Button as="a" className="capability-explore" href={`/services/${serviceSlug(service.title)}`} variant="outline" onClick={(event) => {
+                      event.preventDefault();
+                      navigate(`/services/${serviceSlug(service.title)}`);
+                    }}>
+                      Explore
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="capability-grid">
-          {featuredServices.map((service) => (
-            <Card className="capability-card" key={service.title}>
-              <CardHeader>
-                <span className="capability-mark">{service.title.slice(0, 2)}</span>
-                <h3>{service.title}</h3>
-              </CardHeader>
-              <CardContent>
-                <p>{service.copy}</p>
-                <Button as="a" className="capability-explore" href="/services" variant="outline" onClick={(event) => {
-                  event.preventDefault();
-                  navigate("/services");
-                }}>
-                  Explore
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="capability-scroll-space" aria-hidden="true" />
       </section>
 
-      <section className="home-process section-pad" id="home-process">
+      <section className={`home-process section-pad ${activeSection === "home-process" ? "active" : ""}`} id="home-process">
+        <div className="process-wave-bg" aria-hidden="true">
+          <ProcessWaveCanvas />
+        </div>
         <div className="section-heading">
           <Badge>Method</Badge>
           <h2>From first conversation to measurable release.</h2>
         </div>
         <div className="process-grid">
+          <svg className="process-path" aria-hidden="true" viewBox="0 0 720 420">
+            <path className="process-path-base" d="M140 300 C200 80 520 80 580 300" />
+            <path className="process-path-active" d="M140 300 C200 80 520 80 580 300" />
+          </svg>
           {process.map(([step, title, copy]) => (
             <Card className="process-card" key={step}>
               <CardHeader>
@@ -304,7 +725,7 @@ function ServicePreview({ content, navigate }) {
       </div>
       <div className="service-grid">
         {content.services.slice(0, 4).map((service) => (
-          <ServiceCard service={service} key={service.title} />
+          <ServiceCard navigate={navigate} service={service} key={service.title} />
         ))}
       </div>
       <div className="section-actions">
@@ -319,7 +740,7 @@ function ServicePreview({ content, navigate }) {
   );
 }
 
-function ServicesPage({ content }) {
+function ServicesPage({ content, navigate }) {
   const process = [
     ["Discover", "We identify the goal, audience, workflow, and success metrics."],
     ["Design", "We shape screens, structure, content, and technical architecture."],
@@ -341,7 +762,7 @@ function ServicesPage({ content }) {
         </div>
         <div className="services-grid-redesign">
           {content.services.map((service, index) => (
-            <ServiceCard index={index} service={service} key={service.title} />
+            <ServiceCard index={index} navigate={navigate} service={service} key={service.title} />
           ))}
         </div>
       </section>
@@ -372,7 +793,12 @@ function ServicesPage({ content }) {
             <Badge>Plan your build</Badge>
             <h2>Need help choosing the right service?</h2>
             <p>Tell us what you want to improve, launch, or automate. We will map the right service mix for your business.</p>
-            <Button as="a" href="/contact">Contact Sales</Button>
+            <Button as="a" href="/contact" onClick={(event) => {
+              event.preventDefault();
+              navigate("/contact");
+            }}>
+              Contact Sales
+            </Button>
           </CardContent>
         </Card>
       </section>
@@ -380,19 +806,109 @@ function ServicesPage({ content }) {
   );
 }
 
-function ServiceCard({ service, index = 0 }) {
+function ServiceCard({ service, navigate, index = 0 }) {
+  const href = `/services/${serviceSlug(service.title)}`;
+
   return (
     <Card className="service-card">
       <CardHeader>
         <span>{String(index + 1).padStart(2, "0")}</span>
-        <strong>{service.title.slice(0, 2)}</strong>
+        <strong>
+          <ServiceIcon title={service.title} />
+        </strong>
       </CardHeader>
       <CardContent>
         <h3>{service.title}</h3>
         <p>{service.copy}</p>
-        <Button as="a" href="/contact" variant="outline">Discuss Service</Button>
+        <Button as="a" href={href} variant="outline" onClick={(event) => {
+          event.preventDefault();
+          navigate(href);
+        }}>
+          View Details
+        </Button>
       </CardContent>
     </Card>
+  );
+}
+
+function ServiceDetailPage({ content, navigate, service }) {
+  const detail = getServiceDetails(service);
+  const relatedServices = content.services
+    .filter((item) => item.title !== service.title)
+    .slice(0, 3);
+
+  return (
+    <main className="service-detail-page">
+      <section className="service-detail-hero section-pad">
+        <div className="service-detail-copy">
+          <Badge>{service.title}</Badge>
+          <h1>{detail.headline}</h1>
+          <p>{detail.intro}</p>
+          <div className="hero-actions">
+            <Button as="a" href="/contact" onClick={(event) => {
+              event.preventDefault();
+              navigate("/contact");
+            }}>
+              Start This Service
+            </Button>
+            <Button as="a" href="/services" variant="outline" onClick={(event) => {
+              event.preventDefault();
+              navigate("/services");
+            }}>
+              All Services
+            </Button>
+          </div>
+        </div>
+        <div className="service-detail-media">
+          <img src={serviceImage(service)} alt={service.title} />
+          <span className="service-detail-icon">
+            <ServiceIcon title={service.title} />
+          </span>
+        </div>
+      </section>
+
+      <section className="service-detail-body section-pad">
+        <Card className="service-detail-panel">
+          <CardHeader>
+            <Badge>What is included</Badge>
+            <h2>Planned, built, and launched with the essentials covered.</h2>
+          </CardHeader>
+          <CardContent>
+            <div className="service-detail-list">
+              {detail.deliverables.map((item) => (
+                <span key={item}>{item}</span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="service-detail-panel">
+          <CardHeader>
+            <Badge>Business value</Badge>
+            <h2>What this service helps improve.</h2>
+          </CardHeader>
+          <CardContent>
+            <div className="service-detail-list">
+              {detail.outcomes.map((item) => (
+                <span key={item}>{item}</span>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="related-services section-pad">
+        <div className="section-heading">
+          <Badge>Related services</Badge>
+          <h2>Often paired with {service.title.toLowerCase()}.</h2>
+        </div>
+        <div className="service-process-grid">
+          {relatedServices.map((item, index) => (
+            <ServiceCard index={index} navigate={navigate} service={item} key={item.title} />
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }
 
@@ -406,13 +922,18 @@ function AboutPage({ content }) {
   return (
     <main className="about-redesign">
       <section className="about-hero section-pad">
-        <Badge>{content.about.eyebrow}</Badge>
-        <h1>{content.about.headline}</h1>
-        <p>{content.about.body}</p>
-        <div className="about-stats">
-          <Card><strong>2020</strong><span>Founded</span></Card>
-          <Card><strong>5+</strong><span>Years expertise</span></Card>
-          <Card><strong>8</strong><span>Digital service lines</span></Card>
+        <div className="about-hero-copy">
+          <Badge>{content.about.eyebrow}</Badge>
+          <h1>{content.about.headline}</h1>
+          <p>{content.about.body}</p>
+          <div className="about-stats">
+            <Card><strong>2020</strong><span>Founded</span></Card>
+            <Card><strong>5+</strong><span>Years expertise</span></Card>
+            <Card><strong>8</strong><span>Digital service lines</span></Card>
+          </div>
+        </div>
+        <div className="about-hero-media">
+          <img src="/assets/hero-dashboard.png" alt={`${content.settings.company} conference room`} />
         </div>
       </section>
 
@@ -479,19 +1000,28 @@ function AboutPage({ content }) {
 
 function ContactPage({ content }) {
   return (
-    <main>
-      <PageHero eyebrow={content.contact.eyebrow} headline={content.contact.headline} body={content.contact.body} />
+    <main className="contact-page">
       <section className="contact section-pad">
         <div className="contact-copy">
-          <Badge>Start a project</Badge>
-          <h2>Tell us what you want to build.</h2>
+          <Badge>{content.contact.eyebrow}</Badge>
+          <h1>{content.contact.headline}</h1>
           <p>{content.contact.body}</p>
-          <div className="contact-list">
-            <span>{content.settings.email}</span>
-            <span>{content.settings.phone}</span>
+          <div className="contact-list" aria-label="Contact details">
+            <a href={`mailto:${content.settings.email}`}>{content.settings.email}</a>
+            <a href={`tel:${content.settings.phone.replace(/\s+/g, "")}`}>{content.settings.phone}</a>
+          </div>
+          <div className="contact-service-list" aria-label="Services">
+            {content.services.slice(0, 6).map((service) => (
+              <span key={service.title}>{service.title}</span>
+            ))}
           </div>
         </div>
         <Card className="contact-form">
+          <CardHeader>
+            <h2>Project enquiry</h2>
+            <p>Share a few details and we will get back with the right next step.</p>
+          </CardHeader>
+          <CardContent>
           <label>
             Name
             <Input type="text" name="name" placeholder="Your name" />
@@ -514,6 +1044,7 @@ function ContactPage({ content }) {
             <Textarea name="message" rows="4" placeholder="Briefly describe your project" />
           </label>
           <Button type="button">Send Inquiry</Button>
+          </CardContent>
         </Card>
       </section>
     </main>
@@ -661,6 +1192,18 @@ function AdminPage({ content, setContent, navigate }) {
     }
   };
 
+  const handleLogoUpload = async (key, file) => {
+    if (!file) return;
+    setStatus("Uploading logo...");
+    try {
+      const uploaded = await uploadLogo(file);
+      setField("settings", key, uploaded.path);
+      setStatus("Logo uploaded. Save changes to publish it.");
+    } catch {
+      setStatus("Logo upload failed. Use PNG, JPG, WebP, or SVG under 2MB.");
+    }
+  };
+
   const handleSave = async () => {
     setStatus("Saving to PostgreSQL...");
     try {
@@ -758,6 +1301,18 @@ function AdminPage({ content, setContent, navigate }) {
                   <Field label="Company" value={draft.settings.company} onChange={(value) => setField("settings", "company", value)} />
                   <Field label="Email" value={draft.settings.email} onChange={(value) => setField("settings", "email", value)} />
                   <Field label="Phone" value={draft.settings.phone} onChange={(value) => setField("settings", "phone", value)} />
+                  <LogoUpload
+                    label="Light mode logo"
+                    value={draft.settings.lightLogo}
+                    onChange={(value) => setField("settings", "lightLogo", value)}
+                    onUpload={(file) => handleLogoUpload("lightLogo", file)}
+                  />
+                  <LogoUpload
+                    label="Dark mode logo"
+                    value={draft.settings.darkLogo}
+                    onChange={(value) => setField("settings", "darkLogo", value)}
+                    onUpload={(file) => handleLogoUpload("darkLogo", file)}
+                  />
                   <Field textarea label="Footer tagline" value={draft.settings.tagline} onChange={(value) => setField("settings", "tagline", value)} />
                 </div>
               )}
@@ -780,8 +1335,106 @@ function Field({ label, value, onChange, textarea = false }) {
   return (
     <label>
       {label}
-      <Control value={value} onChange={(event) => onChange(event.target.value)} rows={textarea ? 4 : undefined} />
+      <Control value={value || ""} onChange={(event) => onChange(event.target.value)} rows={textarea ? 4 : undefined} />
     </label>
+  );
+}
+
+function LogoUpload({ label, value, onChange, onUpload }) {
+  return (
+    <label className="logo-upload-field">
+      {label}
+      <div className="logo-upload-preview">
+        <img src={value || "/assets/logo.png"} alt="" />
+        <Input value={value || ""} onChange={(event) => onChange(event.target.value)} />
+      </div>
+      <Input
+        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+        onChange={(event) => onUpload(event.target.files?.[0])}
+        type="file"
+      />
+    </label>
+  );
+}
+
+function ScrollCursorIndicator() {
+  const indicatorRef = useRef(null);
+
+  useEffect(() => {
+    const indicator = indicatorRef.current;
+    if (!indicator) return undefined;
+
+    let scrollTimer = 0;
+    let pointerX = window.innerWidth / 2;
+    let pointerY = window.innerHeight / 2;
+
+    const positionIndicator = () => {
+      indicator.style.transform = `translate3d(${pointerX}px, ${pointerY}px, 0)`;
+    };
+
+    const showIndicator = () => {
+      document.documentElement.classList.add("is-page-scrolling");
+      indicator.classList.add("is-active");
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        document.documentElement.classList.remove("is-page-scrolling");
+        indicator.classList.remove("is-active");
+      }, 260);
+    };
+
+    const handlePointerMove = (event) => {
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      positionIndicator();
+    };
+
+    const handleScroll = () => {
+      positionIndicator();
+      showIndicator();
+    };
+
+    positionIndicator();
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.clearTimeout(scrollTimer);
+      document.documentElement.classList.remove("is-page-scrolling");
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  return (
+    <div className="scroll-cursor-indicator" ref={indicatorRef} aria-hidden="true">
+      <span className="scroll-cursor-shell">
+        <span className="scroll-cursor-wheel" />
+      </span>
+      <span className="scroll-cursor-arrow" />
+    </div>
+  );
+}
+
+function PageLoader({ logo, path }) {
+  const [showLoader, setShowLoader] = useState(true);
+
+  useEffect(() => {
+    setShowLoader(true);
+    const delay = path === "/" ? 1900 : 1200;
+    const timer = window.setTimeout(() => setShowLoader(false), delay);
+    return () => window.clearTimeout(timer);
+  }, [path]);
+
+  if (!showLoader) return null;
+
+  return (
+    <div className="home-loader" role="status" aria-label="Loading Signtech page">
+      <div className="loader-mark">
+        <span className="loader-logo-orbit" />
+        <img src={logo || "/assets/logo.png"} alt="" />
+        <span className="loader-logo-shine" />
+      </div>
+    </div>
   );
 }
 
@@ -801,19 +1454,30 @@ function App() {
     localStorage.setItem("signtech-theme", theme);
   }, [theme]);
 
+  const serviceSlugFromPath = path.startsWith("/services/") ? path.replace("/services/", "") : "";
+  const activeService = content.services.find((service) => serviceSlug(service.title) === serviceSlugFromPath);
+  const loaderLogo = theme === "dark" ? content.settings.darkLogo : content.settings.lightLogo;
   const page =
-    path === "/services" ? <ServicesPage content={content} /> :
+    activeService ? <ServiceDetailPage content={content} navigate={navigate} service={activeService} /> :
+    path === "/services" ? <ServicesPage content={content} navigate={navigate} /> :
     path === "/about" ? <AboutPage content={content} /> :
     path === "/contact" ? <ContactPage content={content} /> :
     path === "/admin" ? <AdminPage content={content} navigate={navigate} setContent={setContent} /> :
     <HomePage content={content} navigate={navigate} />;
 
   if (path === "/admin") {
-    return page;
+    return (
+      <>
+        <PageLoader logo={loaderLogo} path={path} />
+        {page}
+      </>
+    );
   }
 
   return (
     <Layout content={content} navigate={navigate} path={path} setTheme={setTheme} theme={theme}>
+      <PageLoader logo={loaderLogo} path={path} />
+      <ScrollCursorIndicator />
       {page}
     </Layout>
   );
