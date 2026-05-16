@@ -13,6 +13,10 @@ const routes = [
 const CAPABILITY_STICKY_START = 0.14;
 const CAPABILITY_STICKY_END = 0.8;
 const CAPABILITY_SCROLL_END = 0.68;
+const STATIC_LOGOS = {
+  light: "/assets/logo.png",
+  dark: "/uploads/1778462287119-ae012fed-light.png",
+};
 
 const generatedServiceImages = {
   "web-apps": "/assets/generated-service-web-apps.png",
@@ -160,21 +164,6 @@ async function fetchAdminContent() {
   return response.json();
 }
 
-async function uploadLogo(file) {
-  const token = localStorage.getItem("signtech-admin-token");
-  const response = await fetch("/api/admin/upload-logo", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": file.type,
-      "X-File-Name": file.name,
-    },
-    body: file,
-  });
-  if (!response.ok) throw new Error("Could not upload logo");
-  return response.json();
-}
-
 async function loginAdmin(username, password) {
   const response = await fetch("/api/auth/login", {
     method: "POST",
@@ -194,7 +183,7 @@ async function logoutAdmin() {
 }
 
 function Layout({ children, content, navigate, path, theme, setTheme }) {
-  const logo = theme === "dark" ? content.settings.darkLogo : content.settings.lightLogo;
+  const logo = STATIC_LOGOS[theme] || STATIC_LOGOS.dark;
 
   return (
     <>
@@ -1192,18 +1181,6 @@ function AdminPage({ content, setContent, navigate }) {
     }
   };
 
-  const handleLogoUpload = async (key, file) => {
-    if (!file) return;
-    setStatus("Uploading logo...");
-    try {
-      const uploaded = await uploadLogo(file);
-      setField("settings", key, uploaded.path);
-      setStatus("Logo uploaded. Save changes to publish it.");
-    } catch {
-      setStatus("Logo upload failed. Use PNG, JPG, WebP, or SVG under 2MB.");
-    }
-  };
-
   const handleSave = async () => {
     setStatus("Saving to PostgreSQL...");
     try {
@@ -1301,18 +1278,6 @@ function AdminPage({ content, setContent, navigate }) {
                   <Field label="Company" value={draft.settings.company} onChange={(value) => setField("settings", "company", value)} />
                   <Field label="Email" value={draft.settings.email} onChange={(value) => setField("settings", "email", value)} />
                   <Field label="Phone" value={draft.settings.phone} onChange={(value) => setField("settings", "phone", value)} />
-                  <LogoUpload
-                    label="Light mode logo"
-                    value={draft.settings.lightLogo}
-                    onChange={(value) => setField("settings", "lightLogo", value)}
-                    onUpload={(file) => handleLogoUpload("lightLogo", file)}
-                  />
-                  <LogoUpload
-                    label="Dark mode logo"
-                    value={draft.settings.darkLogo}
-                    onChange={(value) => setField("settings", "darkLogo", value)}
-                    onUpload={(file) => handleLogoUpload("darkLogo", file)}
-                  />
                   <Field textarea label="Footer tagline" value={draft.settings.tagline} onChange={(value) => setField("settings", "tagline", value)} />
                 </div>
               )}
@@ -1336,23 +1301,6 @@ function Field({ label, value, onChange, textarea = false }) {
     <label>
       {label}
       <Control value={value || ""} onChange={(event) => onChange(event.target.value)} rows={textarea ? 4 : undefined} />
-    </label>
-  );
-}
-
-function LogoUpload({ label, value, onChange, onUpload }) {
-  return (
-    <label className="logo-upload-field">
-      {label}
-      <div className="logo-upload-preview">
-        <img src={value || "/assets/logo.png"} alt="" />
-        <Input value={value || ""} onChange={(event) => onChange(event.target.value)} />
-      </div>
-      <Input
-        accept="image/png,image/jpeg,image/webp,image/svg+xml"
-        onChange={(event) => onUpload(event.target.files?.[0])}
-        type="file"
-      />
     </label>
   );
 }
@@ -1456,7 +1404,7 @@ function App() {
 
   const serviceSlugFromPath = path.startsWith("/services/") ? path.replace("/services/", "") : "";
   const activeService = content.services.find((service) => serviceSlug(service.title) === serviceSlugFromPath);
-  const loaderLogo = theme === "dark" ? content.settings.darkLogo : content.settings.lightLogo;
+  const loaderLogo = STATIC_LOGOS[theme] || STATIC_LOGOS.dark;
   const page =
     activeService ? <ServiceDetailPage content={content} navigate={navigate} service={activeService} /> :
     path === "/services" ? <ServicesPage content={content} navigate={navigate} /> :
