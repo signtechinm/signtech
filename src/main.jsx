@@ -1474,6 +1474,613 @@ function Field({ label, value, onChange, textarea = false }) {
   );
 }
 
+function ShafeekPage() {
+  const pageRef = useRef(null);
+  const canvasRef = useRef(null);
+  const particlesRef = useRef([]);
+  const progressRef = useRef(0);
+  const loaderRef = useRef(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activePortfolioSection, setActivePortfolioSection] = useState(0);
+
+  const portfolioSections = [
+    {
+      eyebrow: "Portfolio",
+      title: "Shafeek ES",
+      body: "AI-powered full stack web developer from Thrissur, Kerala, with 7+ years of experience building scalable, secure, and high-performance digital products.",
+      meta: "Laravel | WordPress | DeFi | Automation",
+      items: ["Thrissur, Kerala", "7+ years", "Full stack", "AI-powered workflows"],
+    },
+    {
+      eyebrow: "Web & Apps",
+      title: "Modern product stack",
+      body: "Building web and app experiences across Laravel, React, Next.js, WordPress, ecommerce, PHP, JavaScript, and database-backed systems.",
+      meta: "Web and app technologies",
+      items: ["Laravel 10", "Next.js 15", "React 19", "TypeScript", "CodeIgniter", "WordPress", "WooCommerce", "Shopify", "HTML5", "CSS3", "PHP", "JavaScript ES6+", "jQuery", "MySQL", "PostgreSQL"],
+    },
+    {
+      eyebrow: "Blockchain",
+      title: "Web3 and DeFi systems",
+      body: "Experience building token, staking, presale, governance, and blockchain-integrated product flows with smart contract tooling.",
+      meta: "DeFi, tokens, smart contracts",
+      items: ["Solidity 0.8.x", "Hardhat", "Ethers.js", "Wagmi", "Viem", "RainbowKit", "OpenZeppelin", "Smart Contract Auditing", "Token Presale", "Staking Integration"],
+    },
+    {
+      eyebrow: "APIs",
+      title: "Secure connected platforms",
+      body: "Designing and integrating APIs, authentication, frontend data layers, and Web3 signature flows for real application workflows.",
+      meta: "Frameworks and APIs",
+      items: ["RESTful APIs", "GraphQL APIs", "TanStack Query", "React Context", "NextAuth.js", "JWT Auth", "Web3 Signatures"],
+    },
+    {
+      eyebrow: "Interface",
+      title: "UI, design, and motion",
+      body: "Designing responsive interfaces, dark and light modes, design systems, prototypes, and motion-enhanced frontend experiences.",
+      meta: "UI and design tools",
+      items: ["Tailwind CSS", "Radix UI", "Framer Motion", "Figma", "Photoshop", "Canva", "Responsive Design", "Dark/Light Mode Design"],
+    },
+    {
+      eyebrow: "AI & Automation",
+      title: "Faster intelligent workflows",
+      body: "Using AI for prototyping, debugging, automation, planning, and developer acceleration across full stack product delivery.",
+      meta: "AI-assisted development",
+      items: ["ChatGPT", "Claude AI", "GitHub Copilot", "Prompt Engineering", "AI-Driven Prototyping", "AI Debugging", "AI Workflow Automation"],
+    },
+    {
+      eyebrow: "Delivery",
+      title: "Deployment and growth",
+      body: "Handling deployment, migrations, analytics, SEO, hosting panels, serverless releases, and production troubleshooting.",
+      meta: "DevOps, analytics, SEO",
+      items: ["GitHub CI/CD", "Vercel", "cPanel", "AWS", "Database Migrations", "Serverless Deployments", "Google Analytics", "SEO Optimization", "Real-Time APIs", "CoinGecko APIs"],
+    },
+    {
+      eyebrow: "Experience",
+      title: "Senior Web Developer",
+      body: "Working at Calpar Global since 2017, currently as Senior Web Developer. Led Laravel, CodeIgniter, WordPress, hosting, planning, troubleshooting, CRM, logistics, school management, and delivery system projects.",
+      meta: "Calpar Global | Aug 2019 - Present",
+      items: ["Senior Web Developer", "Junior Web Developer", "Junior PHP Developer", "MVC Architecture", "Project Planning", "Troubleshooting"],
+    },
+    {
+      eyebrow: "Selected Work",
+      title: "Products with real systems",
+      body: "Key projects include GlobalChain Finance, an AI-integrated DeFi and tokenised real estate platform, KCG Warehouse Management System, Leacon CRM, Haya App, WADIM, MMRF App, Aqua Dip, CPS, TJSV, and Ralo Delivery System.",
+      meta: "shafeekes999@gmail.com | +91 7012808718",
+      items: ["GlobalChain Finance", "KCG Warehouse Management", "Leacon CRM", "Haya App", "WADIM", "MMRF App", "Aqua Dip", "CPS", "TJSV", "Ralo Delivery System", "Basma School Management", "Career Explorer"],
+    },
+    {
+      eyebrow: "More",
+      title: "Education and languages",
+      body: "Diploma in Web Engineering from Ociuz Infotech, BSc Computer Science from University of Calicut, plus practical communication across English, Malayalam, Hindi, and Tamil.",
+      meta: "Available for projects and collaborations",
+      items: ["Flutter Basics", "AI-Enhanced Cross-Platform Apps", "English", "Malayalam", "Hindi", "Tamil", "BSc Computer Science", "Diploma in Web Engineering"],
+    },
+  ];
+
+  useEffect(() => {
+    const page = pageRef.current;
+    if (!page) return undefined;
+
+    let frame = 0;
+    const updateLaptop = () => {
+      frame = 0;
+      const rect = page.getBoundingClientRect();
+      const scrollable = Math.max(1, page.offsetHeight - window.innerHeight);
+      const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
+      progressRef.current = progress;
+      setActivePortfolioSection(Math.min(portfolioSections.length - 1, Math.floor(progress * portfolioSections.length)));
+      page.style.setProperty("--laptop-open", progress.toFixed(3));
+    };
+
+    const requestUpdate = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateLaptop);
+    };
+
+    updateLaptop();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
+    const startedAt = performance.now();
+    let frame = 0;
+
+    const updateLoader = (now) => {
+      const elapsed = now - startedAt;
+      loaderRef.current = Math.max(0, 1 - elapsed / 1700);
+      if (elapsed >= 1900) {
+        setIsLoading(false);
+        return;
+      }
+      frame = window.requestAnimationFrame(updateLoader);
+    };
+
+    frame = window.requestAnimationFrame(updateLoader);
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+
+    const context = canvas.getContext("2d");
+    let width = 0;
+    let height = 0;
+    let pixelRatio = 1;
+    let animationFrame = 0;
+    let time = 0;
+
+    const random = (seed) => {
+      const value = Math.sin(seed * 12.9898) * 43758.5453;
+      return value - Math.floor(value);
+    };
+
+    const createParticles = () => {
+      const particles = [];
+      const makePoint = (seed, x, y, z, edge = false) => ({
+        x: x + (random(seed + 1) - 0.5) * (edge ? 0.006 : 0.018),
+        y: y + (random(seed + 2) - 0.5) * (edge ? 0.006 : 0.018),
+        z: z + (random(seed + 3) - 0.5) * 0.018,
+        edge,
+      });
+
+      const linePoint = (seed, x1, y1, z1, x2, y2, z2, amount) => {
+        const progress = random(seed + 4);
+        return makePoint(
+          seed,
+          x1 + (x2 - x1) * progress,
+          y1 + (y2 - y1) * progress,
+          z1 + (z2 - z1) * progress,
+          true
+        );
+      };
+
+      const rectPoint = (seed, left, top, right, bottom, z, edgeBias = 0.55) => {
+        if (random(seed + 5) < edgeBias) {
+          const side = Math.floor(random(seed + 6) * 4);
+          if (side === 0) return linePoint(seed, left, top, z, right, top, z, 1);
+          if (side === 1) return linePoint(seed, right, top, z, right, bottom, z, 1);
+          if (side === 2) return linePoint(seed, right, bottom, z, left, bottom, z, 1);
+          return linePoint(seed, left, bottom, z, left, top, z, 1);
+        }
+        return makePoint(seed, left + random(seed + 7) * (right - left), top + random(seed + 8) * (bottom - top), z);
+      };
+
+      const circlePoint = (seed, cx, cy, radius, z, edgeBias = 0.65) => {
+        const angle = random(seed + 9) * Math.PI * 2;
+        const distance = random(seed + 10) < edgeBias ? radius : Math.sqrt(random(seed + 11)) * radius;
+        return makePoint(seed, cx + Math.cos(angle) * distance, cy + Math.sin(angle) * distance, z, distance > radius * 0.82);
+      };
+
+      const roundedRectPoint = (seed, left, top, right, bottom, z, radius = 0.08, edgeBias = 0.62) => {
+        const width = right - left;
+        const height = bottom - top;
+        const edge = random(seed + 26) < edgeBias;
+        if (!edge) {
+          return makePoint(
+            seed,
+            left + radius + random(seed + 27) * Math.max(0.001, width - radius * 2),
+            top + radius + random(seed + 28) * Math.max(0.001, height - radius * 2),
+            z
+          );
+        }
+
+        const perimeter = 2 * (width + height - 4 * radius) + Math.PI * 2 * radius;
+        let distance = random(seed + 29) * perimeter;
+        const lineTop = width - radius * 2;
+        const lineSide = height - radius * 2;
+        const arc = Math.PI * radius * 0.5;
+
+        if (distance < lineTop) return makePoint(seed, left + radius + distance, top, z, true);
+        distance -= lineTop;
+        if (distance < arc) {
+          const angle = -Math.PI / 2 + (distance / arc) * Math.PI / 2;
+          return makePoint(seed, right - radius + Math.cos(angle) * radius, top + radius + Math.sin(angle) * radius, z, true);
+        }
+        distance -= arc;
+        if (distance < lineSide) return makePoint(seed, right, top + radius + distance, z, true);
+        distance -= lineSide;
+        if (distance < arc) {
+          const angle = (distance / arc) * Math.PI / 2;
+          return makePoint(seed, right - radius + Math.cos(angle) * radius, bottom - radius + Math.sin(angle) * radius, z, true);
+        }
+        distance -= arc;
+        if (distance < lineTop) return makePoint(seed, right - radius - distance, bottom, z, true);
+        distance -= lineTop;
+        if (distance < arc) {
+          const angle = Math.PI / 2 + (distance / arc) * Math.PI / 2;
+          return makePoint(seed, left + radius + Math.cos(angle) * radius, bottom - radius + Math.sin(angle) * radius, z, true);
+        }
+        distance -= arc;
+        if (distance < lineSide) return makePoint(seed, left, bottom - radius - distance, z, true);
+        distance -= lineSide;
+        const angle = Math.PI + (distance / arc) * Math.PI / 2;
+        return makePoint(seed, left + radius + Math.cos(angle) * radius, top + radius + Math.sin(angle) * radius, z, true);
+      };
+
+      const curvedLinePoint = (seed, x1, y1, cx, cy, x2, y2, z) => {
+        const t = random(seed + 30);
+        const oneMinusT = 1 - t;
+        return makePoint(
+          seed,
+          oneMinusT * oneMinusT * x1 + 2 * oneMinusT * t * cx + t * t * x2,
+          oneMinusT * oneMinusT * y1 + 2 * oneMinusT * t * cy + t * t * y2,
+          z,
+          true
+        );
+      };
+
+      const taperedBasePoint = (seed) => {
+        const y = -0.02 + random(seed + 31) * 0.86;
+        const progress = (y + 0.02) / 0.86;
+        const halfWidth = 0.63 + progress * 0.18;
+        const edge = random(seed + 32) < 0.76;
+        if (edge) {
+          const side = Math.floor(random(seed + 33) * 4);
+          if (side === 0) return curvedLinePoint(seed, -0.62, -0.03, 0, -0.1, 0.62, -0.03, 0.08);
+          if (side === 1) return curvedLinePoint(seed, 0.62, -0.03, 0.86, 0.38, 0.8, 0.84, 0.09);
+          if (side === 2) return curvedLinePoint(seed, 0.8, 0.84, 0, 0.95, -0.8, 0.84, 0.1);
+          return curvedLinePoint(seed, -0.8, 0.84, -0.86, 0.38, -0.62, -0.03, 0.09);
+        }
+        return makePoint(seed, (random(seed + 34) - 0.5) * halfWidth * 2, y, 0.08);
+      };
+
+      const laptopPoint = (seed) => {
+        const section = random(seed + 12);
+        if (section < 0.32) return roundedRectPoint(seed, -0.64, -0.8, 0.64, -0.23, -0.38, 0.12, 0.86);
+        if (section < 0.38) return curvedLinePoint(seed, -0.72, -0.11, 0, -0.16, 0.72, -0.11, 0.03);
+        if (section < 0.56) return taperedBasePoint(seed);
+        if (section < 0.86) {
+          const row = Math.floor(random(seed + 13) * 5);
+          const col = Math.floor(random(seed + 14) * 12);
+          return roundedRectPoint(seed, -0.52 + col * 0.095, 0.12 + row * 0.09, -0.47 + col * 0.095, 0.15 + row * 0.09, 0.12, 0.012, 0.9);
+        }
+        return roundedRectPoint(seed, -0.23, 0.66, 0.23, 0.8, 0.14, 0.04, 0.76);
+      };
+
+      const profilePoint = (seed) => {
+        const section = random(seed + 15);
+        if (section < 0.42) return circlePoint(seed, 0, -0.36, 0.28, 0.03, 0.78);
+        if (section < 0.7) return circlePoint(seed, -0.1, -0.38, 0.06, 0.04, 0.45);
+        if (section < 0.82) return circlePoint(seed, 0.1, -0.38, 0.06, 0.04, 0.45);
+        return curvedLinePoint(seed, -0.52, 0.62, 0, -0.02, 0.52, 0.62, 0.08);
+      };
+
+      const workPoint = (seed) => {
+        const section = random(seed + 16);
+        if (section < 0.32) return roundedRectPoint(seed, -0.68, -0.62, 0.68, 0.58, 0.02, 0.12, 0.82);
+        if (section < 0.5) return linePoint(seed, -0.52, -0.28, 0.05, -0.24, 0, 0.05, 1);
+        if (section < 0.66) return linePoint(seed, -0.24, 0, 0.05, -0.52, 0.28, 0.05, 1);
+        if (section < 0.82) return linePoint(seed, 0.52, -0.28, 0.05, 0.24, 0, 0.05, 1);
+        return linePoint(seed, 0.24, 0, 0.05, 0.52, 0.28, 0.05, 1);
+      };
+
+      const contactPoint = (seed) => {
+        const section = random(seed + 17);
+        if (section < 0.58) return roundedRectPoint(seed, -0.68, -0.36, 0.68, 0.42, 0.02, 0.1, 0.82);
+        if (section < 0.78) return curvedLinePoint(seed, -0.66, -0.32, -0.24, 0.06, 0, 0.08, 0.03);
+        return curvedLinePoint(seed, 0.66, -0.32, 0.24, 0.06, 0, 0.08, 0.03);
+      };
+
+      const monogramPoint = (seed) => {
+        const section = random(seed + 70);
+        if (section < 0.28) return circlePoint(seed, 0, 0, 0.58, 0.02, 0.92);
+        if (section < 0.44) return curvedLinePoint(seed, -0.56, -0.16, -0.02, -0.34, 0.56, -0.16, 0.05);
+        if (section < 0.6) return curvedLinePoint(seed, -0.56, 0.16, -0.02, 0.34, 0.56, 0.16, 0.05);
+        if (section < 0.74) return curvedLinePoint(seed, -0.18, -0.54, -0.34, 0, -0.18, 0.54, 0.06);
+        if (section < 0.88) return curvedLinePoint(seed, 0.18, -0.54, 0.34, 0, 0.18, 0.54, 0.06);
+        return curvedLinePoint(seed, -0.68, 0.22, 0.02, -0.66, 0.68, -0.22, 0.12);
+      };
+
+      const stackPoint = (seed) => {
+        const section = random(seed + 71);
+        if (section < 0.28) return roundedRectPoint(seed, -0.64, -0.5, 0.48, -0.1, 0.02, 0.1, 0.82);
+        if (section < 0.56) return roundedRectPoint(seed, -0.48, -0.06, 0.64, 0.34, 0.08, 0.1, 0.82);
+        if (section < 0.78) return roundedRectPoint(seed, -0.56, 0.38, 0.56, 0.66, 0.14, 0.08, 0.76);
+        return curvedLinePoint(seed, -0.7, -0.65, 0.1, -0.88, 0.72, -0.5, 0.04);
+      };
+
+      const web3Point = (seed) => {
+        const section = random(seed + 72);
+        const hex = (cx, cy, radius, z) => {
+          const side = Math.floor(random(seed + 73) * 6);
+          const a1 = (Math.PI / 3) * side + Math.PI / 6;
+          const a2 = (Math.PI / 3) * (side + 1) + Math.PI / 6;
+          return linePoint(seed, cx + Math.cos(a1) * radius, cy + Math.sin(a1) * radius, z, cx + Math.cos(a2) * radius, cy + Math.sin(a2) * radius, z, 1);
+        };
+        if (section < 0.44) return hex(0, 0, 0.56, 0.06);
+        if (section < 0.62) return circlePoint(seed, -0.34, -0.22, 0.11, 0.1, 0.82);
+        if (section < 0.8) return circlePoint(seed, 0.36, -0.05, 0.11, 0.1, 0.82);
+        return circlePoint(seed, 0.02, 0.36, 0.11, 0.1, 0.82);
+      };
+
+      const apiPoint = (seed) => {
+        const section = random(seed + 74);
+        if (section < 0.22) return circlePoint(seed, -0.52, -0.34, 0.13, 0.05, 0.82);
+        if (section < 0.44) return circlePoint(seed, 0.5, -0.28, 0.13, 0.05, 0.82);
+        if (section < 0.66) return circlePoint(seed, -0.18, 0.42, 0.13, 0.05, 0.82);
+        if (section < 0.82) return curvedLinePoint(seed, -0.42, -0.28, -0.02, -0.58, 0.4, -0.24, 0.04);
+        return curvedLinePoint(seed, 0.38, -0.18, 0.25, 0.36, -0.08, 0.38, 0.04);
+      };
+
+      const designPoint = (seed) => {
+        const section = random(seed + 75);
+        if (section < 0.5) return circlePoint(seed, 0, 0, 0.54, 0.04, 0.72);
+        if (section < 0.62) return circlePoint(seed, -0.25, -0.16, 0.07, 0.08, 0.7);
+        if (section < 0.74) return circlePoint(seed, 0.02, -0.28, 0.07, 0.08, 0.7);
+        if (section < 0.86) return circlePoint(seed, 0.25, -0.1, 0.07, 0.08, 0.7);
+        return curvedLinePoint(seed, 0.28, 0.24, 0.56, 0.4, 0.16, 0.5, 0.08);
+      };
+
+      const aiPoint = (seed) => {
+        const section = random(seed + 76);
+        const nodes = [
+          [-0.48, -0.36],
+          [0, -0.5],
+          [0.46, -0.28],
+          [-0.32, 0.12],
+          [0.22, 0.14],
+          [-0.02, 0.48],
+        ];
+        const nodeIndex = Math.floor(random(seed + 77) * nodes.length);
+        if (section < 0.48) return circlePoint(seed, nodes[nodeIndex][0], nodes[nodeIndex][1], 0.09, 0.07, 0.8);
+        const nextIndex = (nodeIndex + 1 + Math.floor(random(seed + 78) * 3)) % nodes.length;
+        return curvedLinePoint(seed, nodes[nodeIndex][0], nodes[nodeIndex][1], 0, 0, nodes[nextIndex][0], nodes[nextIndex][1], 0.04);
+      };
+
+      const cloudPoint = (seed) => {
+        const section = random(seed + 79);
+        if (section < 0.26) return circlePoint(seed, -0.28, 0.04, 0.24, 0.06, 0.74);
+        if (section < 0.52) return circlePoint(seed, 0, -0.08, 0.3, 0.06, 0.74);
+        if (section < 0.72) return circlePoint(seed, 0.32, 0.06, 0.2, 0.06, 0.74);
+        return curvedLinePoint(seed, -0.56, 0.18, 0, 0.34, 0.58, 0.18, 0.08);
+      };
+
+      const timelinePoint = (seed) => {
+        const section = random(seed + 80);
+        if (section < 0.22) return curvedLinePoint(seed, -0.54, -0.55, -0.12, -0.24, -0.38, 0.02, 0.04);
+        if (section < 0.44) return curvedLinePoint(seed, -0.38, 0.02, -0.56, 0.38, -0.12, 0.56, 0.04);
+        if (section < 0.64) return circlePoint(seed, -0.54, -0.55, 0.09, 0.08, 0.82);
+        if (section < 0.82) return circlePoint(seed, -0.38, 0.02, 0.09, 0.08, 0.82);
+        return circlePoint(seed, -0.12, 0.56, 0.09, 0.08, 0.82);
+      };
+
+      const mobilePoint = (seed) => {
+        const section = random(seed + 81);
+        if (section < 0.64) return roundedRectPoint(seed, -0.28, -0.66, 0.28, 0.66, 0.04, 0.12, 0.86);
+        if (section < 0.78) return circlePoint(seed, 0, 0.52, 0.04, 0.09, 0.86);
+        return curvedLinePoint(seed, -0.14, -0.5, 0.1, -0.2, -0.08, 0.22, 0.08);
+      };
+
+      const shapes = [monogramPoint, stackPoint, web3Point, apiPoint, designPoint, aiPoint, cloudPoint, timelinePoint, workPoint, contactPoint];
+      const count = 5600;
+      for (let index = 0; index < count; index += 1) {
+        const seed = index + 1;
+        const loaderTarget = monogramPoint(seed);
+        particles.push({
+          originX: (random(seed + 18) - 0.5) * 2.4,
+          originY: (random(seed + 19) - 0.5) * 1.6,
+          originZ: (random(seed + 20) - 0.5) * 0.8,
+          targets: shapes.map((shape) => shape(seed)),
+          loaderTarget,
+          size: (loaderTarget.edge ? 0.95 : 0.48) + random(seed + 21) * (loaderTarget.edge ? 0.72 : 0.58),
+          alpha: (loaderTarget.edge ? 0.72 : 0.3) + random(seed + 22) * (loaderTarget.edge ? 0.22 : 0.34),
+          drift: (random(seed + 23) - 0.5) * 1.7,
+          pulse: 0.12 + random(seed + 24) * 0.32,
+          orbit: 0.7 + random(seed + 25) * 1.15,
+          seed,
+        });
+      }
+      particlesRef.current = particles;
+    };
+
+    const resize = () => {
+      pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.floor(width * pixelRatio);
+      canvas.height = Math.floor(height * pixelRatio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    };
+
+    const ease = (value) => value * value * (3 - 2 * value);
+
+    const projectPoint = (x, y, z, rotateX, rotateY, rotateZ, cameraDistance) => {
+      const cosY = Math.cos(rotateY);
+      const sinY = Math.sin(rotateY);
+      const cosX = Math.cos(rotateX);
+      const sinX = Math.sin(rotateX);
+      const cosZ = Math.cos(rotateZ);
+      const sinZ = Math.sin(rotateZ);
+
+      const yawX = x * cosY - z * sinY;
+      const yawZ = x * sinY + z * cosY;
+      const pitchY = y * cosX - yawZ * sinX;
+      const pitchZ = y * sinX + yawZ * cosX;
+      const rollX = yawX * cosZ - pitchY * sinZ;
+      const rollY = yawX * sinZ + pitchY * cosZ;
+      const perspective = cameraDistance / Math.max(0.35, cameraDistance - pitchZ);
+
+      return {
+        x: rollX * perspective,
+        y: rollY * perspective,
+        z: pitchZ,
+        perspective,
+      };
+    };
+
+    const draw = () => {
+      time += 0.008;
+      const progress = progressRef.current;
+      const loader = loaderRef.current;
+      const portfolioProgress = progress * (portfolioSections.length - 1);
+      const shapeIndex = Math.min(portfolioSections.length - 2, Math.floor(portfolioProgress));
+      const shapeBlend = ease(portfolioProgress - shapeIndex);
+      const activeColors = [
+        ["#ffffff", "#00e5ff", "#ff2bd6"],
+        ["#f8fafc", "#39ff14", "#00b3ff"],
+        ["#ffffff", "#b026ff", "#ff3d71"],
+        ["#f8fafc", "#00f5d4", "#ffe600"],
+        ["#ffffff", "#ff6b00", "#ff2bd6"],
+        ["#f8fafc", "#7c3cff", "#00ffb3"],
+        ["#ffffff", "#00a8ff", "#ff9f1c"],
+        ["#ffffff", "#ffe600", "#00e5ff"],
+        ["#f8fafc", "#00ff85", "#ff2bd6"],
+        ["#ffffff", "#ff3d71", "#00b3ff"],
+      ][Math.min(portfolioSections.length - 1, Math.round(portfolioProgress))];
+      const moveRight = ease(Math.min(1, progress * 1.2));
+      const idlePulse = 1 + Math.sin(time * 1.4) * 0.025;
+      const isMobileViewport = width < 760;
+      const scale = Math.min(width * (isMobileViewport ? 0.32 : 0.34), height * (isMobileViewport ? 0.21 : 0.5)) * idlePulse;
+      const centerX = width * (isMobileViewport ? 0.68 : 0.72) + width * moveRight * (isMobileViewport ? 0.04 : 0.08) + Math.sin(time * 0.62) * 10;
+      const centerY = height * (isMobileViewport ? 0.2 : 0.5) + Math.cos(time * 0.76) * 8;
+      const rotateX = -0.08 + Math.sin(time * 0.7) * 0.075;
+      const rotateY = Math.sin(time * 0.55) * 0.22 + moveRight * 0.08;
+      const rotateZ = Math.sin(time * 0.42) * 0.04;
+      const cameraDistance = 2.35;
+
+      context.clearRect(0, 0, width, height);
+      context.fillStyle = "#000";
+      context.fillRect(0, 0, width, height);
+
+      for (let index = 0; index < 34; index += 1) {
+        const seed = index + 4000;
+        const driftX = Math.sin(time * (0.55 + random(seed) * 0.45) + seed) * 12;
+        const driftY = Math.cos(time * (0.6 + random(seed + 2) * 0.5) + seed) * 9;
+        const x = ((random(seed + 4) * width + driftX + time * 4 * random(seed + 6)) % width + width) % width;
+        const y = ((random(seed + 8) * height + driftY + time * 3 * random(seed + 10)) % height + height) % height;
+        const size = 0.6 + random(seed + 12) * 1.2;
+
+        context.globalAlpha = 0.025 + random(seed + 14) * 0.05;
+        context.fillStyle = random(seed + 16) > 0.72 ? "#ffffff" : "#9ca3af";
+        context.fillRect(x, y, size, size);
+      }
+
+      const projectedParticles = particlesRef.current.map((particle) => {
+        const current = particle.targets[shapeIndex] || particle.targets[0];
+        const next = particle.targets[shapeIndex + 1] || current;
+        const target = {
+          x: current.x + (next.x - current.x) * shapeBlend,
+          y: current.y + (next.y - current.y) * shapeBlend,
+          z: current.z + (next.z - current.z) * shapeBlend,
+          edge: current.edge || next.edge,
+        };
+        const loaderIn = ease(1 - loader);
+        const x = particle.originX + (target.x - particle.originX) * loaderIn;
+        const y = particle.originY + (target.y - particle.originY) * loaderIn;
+        const z = particle.originZ + (target.z - particle.originZ) * loaderIn;
+        const scatter = Math.sin(time * particle.orbit + particle.seed) * particle.drift * 0.08;
+        const shimmer = 0.86 + Math.sin(time * 3.2 + particle.seed) * particle.pulse * 0.08;
+        const projected = projectPoint(
+          x + scatter / Math.max(1, scale),
+          y + Math.cos(time * particle.orbit * 1.2 + particle.seed) * 0.0016,
+          z,
+          rotateX,
+          rotateY,
+          rotateZ,
+          cameraDistance
+        );
+        const px = centerX + projected.x * scale;
+        const py = centerY + projected.y * scale;
+        const alpha = particle.alpha * shimmer * loaderIn;
+
+        return {
+          alpha: target.edge ? Math.min(1, alpha * 1.32) : alpha,
+          color: target.edge
+            ? random(particle.seed + shapeIndex * 29) > 0.52
+              ? activeColors[1]
+              : activeColors[2]
+            : random(particle.seed + shapeIndex * 31) > 0.66
+              ? activeColors[1]
+              : random(particle.seed + shapeIndex * 37) > 0.72
+                ? activeColors[2]
+                : activeColors[0],
+          perspective: projected.perspective,
+          px,
+          py,
+          size: particle.size,
+          z: projected.z,
+        };
+      });
+
+      projectedParticles.sort((a, b) => a.z - b.z);
+      projectedParticles.forEach((particle) => {
+        context.globalAlpha = Math.min(1, Math.max(0.08, particle.alpha));
+        context.fillStyle = particle.color;
+        const size = particle.size * (0.72 + particle.perspective * 0.42);
+        context.fillRect(particle.px, particle.py, size, size);
+      });
+
+      for (let index = 0; index < 42; index += 1) {
+        const seed = 7000 + index;
+        const angle = time * (0.42 + random(seed) * 0.5) + random(seed + 1) * Math.PI * 2;
+        const radius = scale * (0.48 + random(seed + 2) * 0.28);
+        const orbitTilt = Math.sin(angle + random(seed + 3) * 2) * scale * 0.12;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius * 0.36 + orbitTilt;
+        const size = 1 + random(seed + 4) * 2.2;
+
+        context.globalAlpha = 0.28 + random(seed + 5) * 0.34;
+        context.fillStyle = random(seed + 6) > 0.5 ? activeColors[1] : activeColors[2];
+        context.fillRect(x, y, size, size);
+      }
+
+      context.globalAlpha = 1;
+      animationFrame = window.requestAnimationFrame(draw);
+    };
+
+    createParticles();
+    resize();
+    draw();
+    window.addEventListener("resize", resize);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <main className={`shafeek-page ${isLoading ? "is-loading" : ""}`} ref={pageRef}>
+      <canvas className="shafeek-particle-canvas" ref={canvasRef} aria-hidden="true" />
+      {isLoading && <div className="shafeek-loader" aria-label="Loading portfolio" />}
+      <section className="shafeek-portfolio-stage" aria-labelledby="shafeek-title">
+        <h1 id="shafeek-title" className="shafeek-hidden-title">Shafeek</h1>
+        <div className="portfolio-copy">
+          {portfolioSections.map((section, index) => (
+            <article className={activePortfolioSection === index ? "active" : ""} key={section.eyebrow}>
+              <span>{section.eyebrow}</span>
+              <h2>{section.title}</h2>
+              <p>{section.body}</p>
+              {section.items && (
+                <ul className="portfolio-skill-list">
+                  {section.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              )}
+              <strong>{section.meta}</strong>
+            </article>
+          ))}
+        </div>
+        <div className="portfolio-progress" aria-hidden="true">
+          {portfolioSections.map((section, index) => (
+            <span className={activePortfolioSection === index ? "active" : ""} key={section.eyebrow} />
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function ScrollCursorIndicator() {
   const indicatorRef = useRef(null);
 
@@ -1576,6 +2183,7 @@ function App() {
   const loaderLogo = STATIC_LOGOS[theme] || STATIC_LOGOS.dark;
   const page =
     activeService ? <ServiceDetailPage content={content} navigate={navigate} service={activeService} /> :
+    path === "/shafeek" ? <ShafeekPage /> :
     path === "/services" ? <ServicesPage content={content} navigate={navigate} /> :
     path === "/about" ? <AboutPage content={content} /> :
     path === "/contact" ? <ContactPage content={content} /> :
@@ -1589,6 +2197,10 @@ function App() {
         {page}
       </>
     );
+  }
+
+  if (path === "/shafeek") {
+    return page;
   }
 
   return (
