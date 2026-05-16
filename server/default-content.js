@@ -2,8 +2,8 @@ export const defaultContent = {
   settings: {
     company: "Signtech Info & Marketing",
     tagline: "Web development, digital marketing, API development, and graphic design.",
-    email: "hello@signtechinm.com",
-    phone: "+91 00000 00000",
+    email: "signtechinm@gmail.com",
+    phone: "+91 7012808718",
     lightLogo: "/assets/logo.png",
     darkLogo: "/assets/logo.png"
   },

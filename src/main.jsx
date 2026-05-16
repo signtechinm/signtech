@@ -22,7 +22,7 @@ const socialLinks = [
   { label: "Facebook", href: "https://www.facebook.com/signtechinm", icon: "facebook" },
   { label: "Instagram", href: "https://www.instagram.com/signtechinm", icon: "instagram" },
   { label: "LinkedIn", href: "https://www.linkedin.com/company/signtechinm", icon: "linkedin" },
-  { label: "WhatsApp", href: "https://wa.me/910000000000", icon: "whatsapp" },
+  { label: "WhatsApp", href: "https://wa.me/917012808718", icon: "whatsapp" },
 ];
 
 const generatedServiceImages = {
@@ -191,35 +191,33 @@ async function logoutAdmin() {
 
 function Layout({ children, content, navigate, path, theme, setTheme }) {
   const logo = STATIC_LOGOS[theme] || STATIC_LOGOS.dark;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const contactDigits = content.settings.phone.replace(/\D/g, "");
   const footerSocialLinks = socialLinks.map((social) => (
     social.icon === "whatsapp" ? { ...social, href: `https://wa.me/${contactDigits}` } : social
   ));
 
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [path]);
+
+  useEffect(() => {
+    document.body.classList.toggle("menu-open", isMenuOpen);
+    return () => document.body.classList.remove("menu-open");
+  }, [isMenuOpen]);
+
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+
   return (
     <>
       <header className="site-header">
         <div className="header-brand-group">
-          <div className="header-socials" aria-label="Social links">
-            {footerSocialLinks.map((social) => (
-              <a
-                aria-label={social.label}
-                href={social.href}
-                key={social.label}
-                rel="noreferrer"
-                target="_blank"
-                title={social.label}
-              >
-                <SocialIcon name={social.icon} />
-              </a>
-            ))}
-          </div>
           <AppLink className="brand" href="/" navigate={navigate}>
             <img src={logo || "/assets/logo.png"} alt={content.settings.company} />
           </AppLink>
         </div>
         <div className="header-menu-group">
-          <nav aria-label="Primary navigation">
+          <nav className="primary-nav" aria-label="Primary navigation">
             {routes.map((route) => (
               <AppLink className={path === route.href ? "active" : ""} href={route.href} key={route.href} navigate={navigate}>
                 {route.label}
@@ -230,14 +228,76 @@ function Layout({ children, content, navigate, path, theme, setTheme }) {
             <button
               aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               className="theme-icon-button"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              onClick={toggleTheme}
               type="button"
             >
               <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
             </button>
           </div>
         </div>
+        <div className="mobile-header-actions">
+          <button
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            className="theme-icon-button"
+            onClick={toggleTheme}
+            type="button"
+          >
+            <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
+          </button>
+          <button
+            aria-controls="mobile-menu"
+            aria-expanded={isMenuOpen}
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            className="menu-toggle"
+            onClick={() => setIsMenuOpen((open) => !open)}
+            type="button"
+          >
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+          </button>
+        </div>
       </header>
+      {isMenuOpen && (
+        <div className="mobile-menu open" id="mobile-menu">
+          <div className="mobile-menu-panel">
+            <div className="mobile-menu-top">
+              <img src={logo || "/assets/logo.png"} alt={content.settings.company} />
+              <button
+                aria-label="Close menu"
+                className="mobile-menu-close"
+                onClick={() => setIsMenuOpen(false)}
+                type="button"
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+            <nav className="mobile-nav" aria-label="Mobile navigation">
+              {routes.map((route) => (
+                <AppLink className={path === route.href ? "active" : ""} href={route.href} key={route.href} navigate={navigate}>
+                  {route.label}
+                </AppLink>
+              ))}
+            </nav>
+            <div className="mobile-menu-actions">
+              <div className="mobile-menu-socials" aria-label="Social links">
+                {footerSocialLinks.map((social) => (
+                  <a
+                    aria-label={social.label}
+                    href={social.href}
+                    key={social.label}
+                    rel="noreferrer"
+                    target="_blank"
+                    title={social.label}
+                  >
+                    <SocialIcon name={social.icon} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {children}
       <footer className="site-footer">
         <div className="footer-brand">
@@ -523,8 +583,10 @@ function HomePage({ content, navigate }) {
   const heroTechIcons = content.tech.slice(0, 7);
   const heroRef = useRef(null);
   const capabilitiesRef = useRef(null);
+  const capabilityViewportRef = useRef(null);
   const capabilityTrackRef = useRef(null);
   const [isCapabilitySticky, setIsCapabilitySticky] = useState(false);
+  const [isCapabilitySwiping, setIsCapabilitySwiping] = useState(false);
   const timelineItems = [
     ["home-hero", "Hero"],
     ["home-capabilities", "Capabilities"],
@@ -625,6 +687,32 @@ function HomePage({ content, navigate }) {
     };
   }, []);
 
+  useEffect(() => {
+    const viewport = capabilityViewportRef.current;
+    if (!viewport) return undefined;
+
+    let swipeTimer = 0;
+    const showSwipeGesture = () => {
+      if (window.innerWidth > 860) return;
+      setIsCapabilitySwiping(true);
+      window.clearTimeout(swipeTimer);
+      swipeTimer = window.setTimeout(() => setIsCapabilitySwiping(false), 650);
+    };
+
+    viewport.addEventListener("touchstart", showSwipeGesture, { passive: true });
+    viewport.addEventListener("touchmove", showSwipeGesture, { passive: true });
+    viewport.addEventListener("pointerdown", showSwipeGesture, { passive: true });
+    viewport.addEventListener("scroll", showSwipeGesture, { passive: true });
+
+    return () => {
+      window.clearTimeout(swipeTimer);
+      viewport.removeEventListener("touchstart", showSwipeGesture);
+      viewport.removeEventListener("touchmove", showSwipeGesture);
+      viewport.removeEventListener("pointerdown", showSwipeGesture);
+      viewport.removeEventListener("scroll", showSwipeGesture);
+    };
+  }, []);
+
   const activeIndex = Math.max(0, timelineItems.findIndex(([id]) => id === activeSection));
 
   const updateHeroPointer = (event) => {
@@ -694,7 +782,10 @@ function HomePage({ content, navigate }) {
             <h2>Everything your digital presence needs, organized into clear workstreams.</h2>
             <p>{content.home.body}</p>
           </div>
-          <div className="capability-viewport">
+          <div className={`capability-viewport ${isCapabilitySwiping ? "is-swipe-active" : ""}`} ref={capabilityViewportRef}>
+            <span className="swipe-gesture-indicator" aria-hidden="true">
+              <span />
+            </span>
             <div className="capability-grid" ref={capabilityTrackRef}>
               {featuredServices.map((service) => (
                 <Card className="capability-card" key={service.title}>
