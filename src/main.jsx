@@ -1480,6 +1480,8 @@ function ShafeekPage() {
   const particlesRef = useRef([]);
   const progressRef = useRef(0);
   const loaderRef = useRef(1);
+  const shapeTargetRef = useRef(0);
+  const shapeDisplayRef = useRef(0);
   const [isLoading, setIsLoading] = useState(true);
   const [activePortfolioSection, setActivePortfolioSection] = useState(0);
 
@@ -1566,8 +1568,10 @@ function ShafeekPage() {
       const rect = page.getBoundingClientRect();
       const scrollable = Math.max(1, page.offsetHeight - window.innerHeight);
       const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
+      const activeSection = Math.min(portfolioSections.length - 1, Math.floor(progress * portfolioSections.length));
       progressRef.current = progress;
-      setActivePortfolioSection(Math.min(portfolioSections.length - 1, Math.floor(progress * portfolioSections.length)));
+      shapeTargetRef.current = activeSection;
+      setActivePortfolioSection(activeSection);
       page.style.setProperty("--laptop-open", progress.toFixed(3));
     };
 
@@ -1921,7 +1925,8 @@ function ShafeekPage() {
       time += 0.008;
       const progress = progressRef.current;
       const loader = loaderRef.current;
-      const portfolioProgress = progress * (portfolioSections.length - 1);
+      shapeDisplayRef.current += (shapeTargetRef.current - shapeDisplayRef.current) * 0.08;
+      const portfolioProgress = shapeDisplayRef.current;
       const shapeIndex = Math.min(portfolioSections.length - 2, Math.floor(portfolioProgress));
       const shapeBlend = ease(portfolioProgress - shapeIndex);
       const activeColors = [
