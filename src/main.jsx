@@ -8,6 +8,7 @@ const routes = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
+  { href: "/contact", label: "Contact" },
 ];
 
 const CAPABILITY_STICKY_START = 0.14;
@@ -17,6 +18,12 @@ const STATIC_LOGOS = {
   light: "/assets/logo.png",
   dark: "/uploads/1778462287119-ae012fed-light.png",
 };
+const socialLinks = [
+  { label: "Facebook", href: "https://www.facebook.com/signtechinm", icon: "facebook" },
+  { label: "Instagram", href: "https://www.instagram.com/signtechinm", icon: "instagram" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/signtechinm", icon: "linkedin" },
+  { label: "WhatsApp", href: "https://wa.me/910000000000", icon: "whatsapp" },
+];
 
 const generatedServiceImages = {
   "web-apps": "/assets/generated-service-web-apps.png",
@@ -184,43 +191,114 @@ async function logoutAdmin() {
 
 function Layout({ children, content, navigate, path, theme, setTheme }) {
   const logo = STATIC_LOGOS[theme] || STATIC_LOGOS.dark;
+  const contactDigits = content.settings.phone.replace(/\D/g, "");
+  const footerSocialLinks = socialLinks.map((social) => (
+    social.icon === "whatsapp" ? { ...social, href: `https://wa.me/${contactDigits}` } : social
+  ));
 
   return (
     <>
       <header className="site-header">
-        <AppLink className="brand" href="/" navigate={navigate}>
-          <img src={logo || "/assets/logo.png"} alt={content.settings.company} />
-        </AppLink>
-        <nav aria-label="Primary navigation">
-          {routes.map((route) => (
-            <AppLink className={path === route.href ? "active" : ""} href={route.href} key={route.href} navigate={navigate}>
-              {route.label}
-            </AppLink>
-          ))}
-        </nav>
-        <div className="header-actions">
-          <Button as="a" className="header-action" href="/contact" onClick={(event) => {
-            event.preventDefault();
-            navigate("/contact");
-          }}>
-            Contact Sales
-          </Button>
-          <button
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="theme-icon-button"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            type="button"
-          >
-            <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
-          </button>
+        <div className="header-brand-group">
+          <div className="header-socials" aria-label="Social links">
+            {footerSocialLinks.map((social) => (
+              <a
+                aria-label={social.label}
+                href={social.href}
+                key={social.label}
+                rel="noreferrer"
+                target="_blank"
+                title={social.label}
+              >
+                <SocialIcon name={social.icon} />
+              </a>
+            ))}
+          </div>
+          <AppLink className="brand" href="/" navigate={navigate}>
+            <img src={logo || "/assets/logo.png"} alt={content.settings.company} />
+          </AppLink>
+        </div>
+        <div className="header-menu-group">
+          <nav aria-label="Primary navigation">
+            {routes.map((route) => (
+              <AppLink className={path === route.href ? "active" : ""} href={route.href} key={route.href} navigate={navigate}>
+                {route.label}
+              </AppLink>
+            ))}
+          </nav>
+          <div className="header-actions">
+            <button
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              className="theme-icon-button"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              type="button"
+            >
+              <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
+            </button>
+          </div>
         </div>
       </header>
       {children}
-      <footer>
-        <img src={logo || "/assets/logo.png"} alt={content.settings.company} />
-        <p>{content.settings.tagline}</p>
+      <footer className="site-footer">
+        <div className="footer-brand">
+          <img src={logo || "/assets/logo.png"} alt={content.settings.company} />
+          <p>{content.settings.tagline}</p>
+        </div>
+        <div className="footer-contact">
+          <a href={`mailto:${content.settings.email}`}>{content.settings.email}</a>
+          <a href={`tel:${content.settings.phone.replace(/\s+/g, "")}`}>{content.settings.phone}</a>
+        </div>
+        <div className="footer-socials" aria-label="Social links">
+          {footerSocialLinks.map((social) => (
+            <a
+              aria-label={social.label}
+              href={social.href}
+              key={social.label}
+              rel="noreferrer"
+              target="_blank"
+              title={social.label}
+            >
+              <SocialIcon name={social.icon} />
+            </a>
+          ))}
+        </div>
       </footer>
     </>
+  );
+}
+
+function SocialIcon({ name }) {
+  const paths = {
+    facebook: (
+      <path d="M14 8.4V6.8c0-.8.5-1.2 1.3-1.2H17V2.7c-.8-.1-1.6-.2-2.4-.2-2.5 0-4.2 1.5-4.2 4.1v1.8H7.7v3.2h2.7v9.9H14v-9.9h2.7l.5-3.2H14Z" />
+    ),
+    instagram: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="5" />
+        <circle cx="12" cy="12" r="3.6" />
+        <circle cx="16.7" cy="7.4" r="1" />
+      </>
+    ),
+    linkedin: (
+      <>
+        <path d="M6.4 9.8v9.1" />
+        <path d="M10.6 18.9v-5.1c0-2.4 1.3-4.1 3.7-4.1 2.2 0 3.3 1.5 3.3 4v5.2" />
+        <path d="M10.6 13.9V9.8" />
+        <circle cx="6.4" cy="6" r="1.4" />
+      </>
+    ),
+    whatsapp: (
+      <>
+        <path d="M5.6 18.5 6.8 15A7.2 7.2 0 1 1 9 17.2l-3.4 1.3Z" />
+        <path d="M9.4 8.6c.2-.5.4-.6.8-.6h.6c.2 0 .4.1.5.4l.7 1.6c.1.3.1.5-.1.7l-.4.5c.6 1.1 1.4 1.9 2.5 2.5l.5-.5c.2-.2.4-.2.7-.1l1.6.8c.3.1.4.3.4.6v.5c0 .5-.2.8-.7.9-3 .6-7.2-3.3-6.6-7.3Z" />
+      </>
+    ),
+  };
+
+  return (
+    <svg aria-hidden="true" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24">
+      {paths[name]}
+    </svg>
   );
 }
 
