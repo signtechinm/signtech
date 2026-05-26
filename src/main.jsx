@@ -11,9 +11,7 @@ const routes = [
   { href: "/contact", label: "Contact" },
 ];
 
-const CAPABILITY_STICKY_START = 0.14;
-const CAPABILITY_STICKY_END = 0.8;
-const CAPABILITY_SCROLL_END = 0.68;
+const CAPABILITY_STICKY_END_Y = 4000;
 const STATIC_LOGOS = {
   light: "/assets/logo.png",
   dark: "/uploads/1778462287119-ae012fed-light.png",
@@ -585,14 +583,22 @@ function HomePage({ content, navigate }) {
   const capabilitiesRef = useRef(null);
   const capabilityViewportRef = useRef(null);
   const capabilityTrackRef = useRef(null);
-  const [isCapabilitySticky, setIsCapabilitySticky] = useState(false);
+  const [capabilityActiveStep, setCapabilityActiveStep] = useState(0);
   const [isCapabilitySwiping, setIsCapabilitySwiping] = useState(false);
+  const capabilityStepCount = Math.max(1, Math.ceil(featuredServices.length / 2));
   const timelineItems = [
     ["home-hero", "Hero"],
     ["home-capabilities", "Capabilities"],
+    ["home-solution", "Solution"],
     ["home-process", "Method"],
     ["home-stack", "Stack"],
     ["home-contact", "Contact"],
+  ];
+  const solutionMechanism = [
+    ["01", "Understand the need", "We study your business goal, users, current process, and the gaps that are slowing growth."],
+    ["02", "Shape the solution", "We define the right mix of website, app, API, ecommerce, marketing, and design work for the outcome."],
+    ["03", "Build the workflow", "We create the interface, backend, integrations, content flow, and launch assets around one connected system."],
+    ["04", "Measure and improve", "We review performance, user response, enquiries, and operations so the solution keeps getting sharper."],
   ];
   const [activeSection, setActiveSection] = useState(timelineItems[0][0]);
   const process = [
@@ -627,48 +633,38 @@ function HomePage({ content, navigate }) {
 
     const updateCapabilityScroll = () => {
       frame = 0;
-      const maxScroll = Math.max(
-        1,
-        document.documentElement.scrollHeight - window.innerHeight
-      );
-      const scrollY = Math.min(maxScroll, Math.max(0, window.scrollY));
-      const pageProgress = scrollY / maxScroll;
-      setIsCapabilitySticky(
-        window.innerWidth > 860 &&
-        pageProgress >= CAPABILITY_STICKY_START &&
-        pageProgress <= CAPABILITY_STICKY_END
-      );
-
       const section = capabilitiesRef.current;
       const track = capabilityTrackRef.current;
       const viewport = track?.parentElement;
       if (!section || !track || !viewport) return;
 
-      const progress = Math.min(
-        1,
-        Math.max(
-          0,
-          (pageProgress - CAPABILITY_STICKY_START) /
-            (CAPABILITY_SCROLL_END - CAPABILITY_STICKY_START)
-        )
-      );
-      const cards = Array.from(track.children);
-      const gap = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft - cards[0].offsetWidth : 0;
-      const pairWidth = cards[0] ? (cards[0].offsetWidth + gap) * 2 : 0;
       const maxShift = Math.max(0, track.scrollWidth - viewport.clientWidth);
-      const scrollRunway = Math.max(window.innerHeight * 1.35, maxShift * 1.05);
+      const headerHeight = document.querySelector(".site-header")?.offsetHeight || 78;
+      const stickyTop = headerHeight;
+      const sectionPageTop = section.getBoundingClientRect().top + window.scrollY;
+      const scrollRunway = Math.max(1, CAPABILITY_STICKY_END_Y + stickyTop - sectionPageTop);
+      section.style.setProperty("--capability-sticky-top", `${stickyTop}px`);
       section.style.setProperty("--capability-scroll-space", `${scrollRunway}px`);
-      const maxPairIndex = Math.max(1, Math.ceil(maxShift / Math.max(1, pairWidth)));
-      const pairProgress = progress * maxPairIndex;
-      const basePair = Math.floor(pairProgress);
-      const localProgress = pairProgress - basePair;
-      const easedLocalProgress = localProgress < 0.5
-        ? 2 * localProgress * localProgress
-        : 1 - Math.pow(-2 * localProgress + 2, 2) / 2;
-      const shiftedPairProgress = Math.min(maxPairIndex, basePair + easedLocalProgress);
-      const shift = Math.min(maxShift, shiftedPairProgress * pairWidth);
+
+      if (window.innerWidth <= 860 || maxShift <= 0) {
+        track.style.transform = "translate3d(0, 0, 0)";
+        section.style.setProperty("--capability-progress", "0");
+        setCapabilityActiveStep(0);
+        return;
+      }
+
+      const sectionTop = section.getBoundingClientRect().top;
+      const elapsed = stickyTop - sectionTop;
+      const stickyTravel = scrollRunway;
+      const progress = Math.min(1, Math.max(0, elapsed / stickyTravel));
+      const isScrollActive = elapsed >= 0 && window.scrollY <= CAPABILITY_STICKY_END_Y;
+      const stickyOffset = isScrollActive ? Math.max(0, elapsed) : 0;
+      section.style.setProperty("--capability-pin-offset", `${stickyOffset}px`);
+      const shift = maxShift * progress;
       track.style.transform = `translate3d(${-shift}px, 0, 0)`;
       section.style.setProperty("--capability-progress", progress.toFixed(3));
+      const nextStep = Math.min(capabilityStepCount - 1, Math.round(progress * (capabilityStepCount - 1)));
+      setCapabilityActiveStep((currentStep) => currentStep === nextStep ? currentStep : nextStep);
     };
 
     const requestUpdate = () => {
@@ -772,7 +768,7 @@ function HomePage({ content, navigate }) {
       </section>
 
       <section
-        className={`home-capabilities ${isCapabilitySticky ? "is-scroll-sticky" : ""}`}
+        className="home-capabilities"
         id="home-capabilities"
         ref={capabilitiesRef}
       >
@@ -808,8 +804,45 @@ function HomePage({ content, navigate }) {
               ))}
             </div>
           </div>
+          <div
+            className="capability-meter"
+            aria-label={`Capabilities scroll point ${capabilityActiveStep + 1} of ${capabilityStepCount}`}
+            style={{ "--meter-progress": capabilityStepCount > 1 ? capabilityActiveStep / (capabilityStepCount - 1) : 0 }}
+          >
+            {Array.from({ length: capabilityStepCount }).map((_, index) => (
+              <span
+                aria-hidden="true"
+                className={index === capabilityActiveStep ? "active" : ""}
+                key={index}
+              />
+            ))}
+          </div>
         </div>
         <div className="capability-scroll-space" aria-hidden="true" />
+      </section>
+
+      <section className="home-solution section-pad" id="home-solution">
+        <div className="section-heading centered">
+          <Badge>Solution mechanism</Badge>
+          <h2>We turn a business problem into a working digital system.</h2>
+          <p>
+            Every project is planned as a practical mechanism: inputs from your team,
+            the right technical workstream, a clear delivery flow, and measurable output after launch.
+          </p>
+        </div>
+        <div className="solution-mechanism-grid">
+          {solutionMechanism.map(([step, title, copy]) => (
+            <Card className="solution-mechanism-card" key={step}>
+              <CardHeader>
+                <span>{step}</span>
+                <h3>{title}</h3>
+              </CardHeader>
+              <CardContent>
+                <p>{copy}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </section>
 
       <section className={`home-process section-pad ${activeSection === "home-process" ? "active" : ""}`} id="home-process">
@@ -1482,6 +1515,8 @@ function ShafeekPage() {
   const loaderRef = useRef(1);
   const shapeTargetRef = useRef(0);
   const shapeDisplayRef = useRef(0);
+  const mouseRef = useRef({ x: -9999, y: -9999, active: false });
+  const shatterRef = useRef([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activePortfolioSection, setActivePortfolioSection] = useState(0);
 
@@ -1619,13 +1654,160 @@ function ShafeekPage() {
     let pixelRatio = 1;
     let animationFrame = 0;
     let time = 0;
+    let isDisposed = false;
 
     const random = (seed) => {
       const value = Math.sin(seed * 12.9898) * 43758.5453;
       return value - Math.floor(value);
     };
 
-    const createParticles = () => {
+    const portraitVectorSource = "/assets/portrait_dotted_vector.svg";
+
+    const loadPortraitTargets = () =>
+      new Promise((resolve) => {
+        const image = new Image();
+
+        image.onload = () => {
+          const sampleWidth = 420;
+          const sampleHeight = Math.round(sampleWidth * (image.naturalHeight / image.naturalWidth));
+          const sampler = document.createElement("canvas");
+          const samplerContext = sampler.getContext("2d", { willReadFrequently: true });
+          const points = [];
+
+          if (!samplerContext) {
+            resolve(points);
+            return;
+          }
+
+          sampler.width = sampleWidth;
+          sampler.height = sampleHeight;
+          samplerContext.fillStyle = "#000";
+          samplerContext.fillRect(0, 0, sampleWidth, sampleHeight);
+          samplerContext.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+
+          const { data } = samplerContext.getImageData(0, 0, sampleWidth, sampleHeight);
+          const portraitHeight = 1.86;
+          const portraitWidth = portraitHeight * (image.naturalWidth / image.naturalHeight);
+          const getRawLuminance = (sampleX, sampleY) => {
+            const clampedX = Math.min(sampleWidth - 1, Math.max(0, sampleX));
+            const clampedY = Math.min(sampleHeight - 1, Math.max(0, sampleY));
+            const offset = (clampedY * sampleWidth + clampedX) * 4;
+            const alpha = data[offset + 3] / 255;
+            return ((data[offset] + data[offset + 1] + data[offset + 2]) / 3) * alpha;
+          };
+          const getLuminance = (sampleX, sampleY) => {
+            let total = 0;
+            let count = 0;
+            for (let dy = -2; dy <= 2; dy++) {
+              for (let dx = -2; dx <= 2; dx++) {
+                total += getRawLuminance(sampleX + dx, sampleY + dy);
+                count++;
+              }
+            }
+            return total / count;
+          };
+          const getPortraitTone = (sampleX, sampleY, luminance, edge = false) => {
+            const xRatio = sampleX / sampleWidth;
+            const yRatio = sampleY / sampleHeight;
+            const faceOvalX = (xRatio - 0.5) / 0.38;
+            const faceOvalY = (yRatio - 0.46) / 0.30;
+            const isFaceArea = faceOvalX * faceOvalX + faceOvalY * faceOvalY < 1;
+            const isEarArea = yRatio > 0.38 && yRatio < 0.58 && (xRatio < 0.22 || xRatio > 0.78);
+            const isHairArea = yRatio < 0.34 && xRatio > 0.18 && xRatio < 0.75;
+            const isBeardArea = yRatio > 0.58 && yRatio < 0.72 && xRatio > 0.3 && xRatio < 0.7;
+            const isNeckArea = yRatio > 0.66 && yRatio < 0.84 && xRatio > 0.32 && xRatio < 0.68;
+            const isDressArea = yRatio > 0.76 && xRatio > 0.1 && xRatio < 0.9;
+            if (isFaceArea || isEarArea) {
+              if (luminance > 140) return "skinHighlight";
+              if (luminance > 80) return "skin";
+              if (luminance > 45) return "skinShadow";
+              return "skinFill";
+            }
+            if (isNeckArea) {
+              if (luminance > 100) return "skinHighlight";
+              if (luminance > 55) return "skin";
+              if (luminance > 30) return "skinShadow";
+              return "skinFill";
+            }
+            if (isDressArea) {
+              if (luminance > 120) return "dressHighlight";
+              if (luminance > 60) return "dress";
+              if (luminance > 30) return "dressShadow";
+              return "dressFill";
+            }
+            if (isHairArea || isBeardArea) return luminance > 150 ? "hairLight" : "hair";
+            return "";
+          };
+
+          const pushPoint = (sampleX, sampleY, luminance, edge = false, toneOverride = "", fill = false) => {
+            const clampedX = Math.min(sampleWidth - 1, Math.max(0, sampleX));
+            const clampedY = Math.min(sampleHeight - 1, Math.max(0, sampleY));
+            points.push({
+              x: (clampedX / (sampleWidth - 1) - 0.5) * portraitWidth,
+              y: (clampedY / (sampleHeight - 1) - 0.5) * portraitHeight,
+              z: luminance > 150 || edge ? 0.04 : -0.03,
+              edge,
+              tone: toneOverride || getPortraitTone(clampedX, clampedY, luminance, edge),
+              fill,
+            });
+          };
+
+          for (let y = 0; y < sampleHeight; y += 3) {
+            for (let x = 0; x < sampleWidth; x += 3) {
+              const luminance = getLuminance(x, y);
+              const xRatio = x / sampleWidth;
+              const yRatio = y / sampleHeight;
+              const faceOvalX = (xRatio - 0.5) / 0.38;
+              const faceOvalY = (yRatio - 0.46) / 0.30;
+              const isFaceArea = faceOvalX * faceOvalX + faceOvalY * faceOvalY < 1;
+              const isEarArea = yRatio > 0.38 && yRatio < 0.58 && (xRatio < 0.22 || xRatio > 0.78);
+              const isNeckArea = yRatio > 0.66 && yRatio < 0.84 && xRatio > 0.32 && xRatio < 0.68;
+              const isDressArea = yRatio > 0.76 && xRatio > 0.1 && xRatio < 0.9;
+              if (luminance < 48) {
+                if ((isFaceArea || isEarArea) && (x + y) % 9 < 4) {
+                  pushPoint(x, y, 72, false, "skinFill", true);
+                } else if (isNeckArea && (x + y) % 9 < 4) {
+                  pushPoint(x, y, 60, false, "skinFill", true);
+                } else if (isDressArea && (x + y) % 9 < 5) {
+                  pushPoint(x, y, 50, false, "dressFill", true);
+                }
+                continue;
+              }
+
+              const surroundingBright = Math.max(
+                getLuminance(x - 2, y),
+                getLuminance(x + 2, y),
+                getLuminance(x, y - 2),
+                getLuminance(x, y + 2)
+              );
+              const surroundingDark = Math.min(
+                getLuminance(x - 2, y),
+                getLuminance(x + 2, y),
+                getLuminance(x, y - 2),
+                getLuminance(x, y + 2)
+              );
+              const contrast = surroundingBright - surroundingDark;
+              pushPoint(x, y, luminance, luminance > 100 || contrast > 32);
+              if (isFaceArea && luminance > 42) {
+                pushPoint(x + 1, y + 1, luminance, luminance > 90 || contrast > 24);
+                if (luminance > 70 || contrast > 30) {
+                  pushPoint(x - 1, y + 1, luminance, true);
+                }
+                if (luminance > 55 || contrast > 28) {
+                  pushPoint(x + 1, y - 1, luminance, luminance > 80 || contrast > 30);
+                }
+              }
+            }
+          }
+
+          resolve(points);
+        };
+
+        image.onerror = () => resolve([]);
+        image.src = portraitVectorSource;
+      });
+
+    const createParticles = (portraitTargets = []) => {
       const particles = [];
       const makePoint = (seed, x, y, z, edge = false) => ({
         x: x + (random(seed + 1) - 0.5) * (edge ? 0.006 : 0.018),
@@ -1782,6 +1964,17 @@ function ShafeekPage() {
         return curvedLinePoint(seed, -0.68, 0.22, 0.02, -0.66, 0.68, -0.22, 0.12);
       };
 
+      const portraitPoint = (seed) => {
+        if (!portraitTargets.length) return monogramPoint(seed);
+
+        const point = portraitTargets[Math.floor(((seed * 0.61803398875) % 1) * portraitTargets.length)];
+        return {
+          ...makePoint(seed, point.x, point.y, point.z, point.edge),
+          tone: point.tone,
+          fill: point.fill,
+        };
+      };
+
       const stackPoint = (seed) => {
         const section = random(seed + 71);
         if (section < 0.28) return roundedRectPoint(seed, -0.64, -0.5, 0.48, -0.1, 0.02, 0.1, 0.82);
@@ -1862,19 +2055,26 @@ function ShafeekPage() {
         return curvedLinePoint(seed, -0.14, -0.5, 0.1, -0.2, -0.08, 0.22, 0.08);
       };
 
-      const shapes = [monogramPoint, stackPoint, web3Point, apiPoint, designPoint, aiPoint, cloudPoint, timelinePoint, workPoint, contactPoint];
-      const count = 5600;
+      const shapes = [portraitPoint, stackPoint, web3Point, apiPoint, designPoint, aiPoint, cloudPoint, timelinePoint, workPoint, contactPoint];
+      const count = portraitTargets.length
+        ? Math.min(17000, Math.max(10500, portraitTargets.length))
+        : 5600;
       for (let index = 0; index < count; index += 1) {
         const seed = index + 1;
-        const loaderTarget = monogramPoint(seed);
+        const loaderTarget = portraitPoint(seed);
+        const isFillParticle = loaderTarget.fill;
         particles.push({
           originX: (random(seed + 18) - 0.5) * 2.4,
           originY: (random(seed + 19) - 0.5) * 1.6,
           originZ: (random(seed + 20) - 0.5) * 0.8,
           targets: shapes.map((shape) => shape(seed)),
           loaderTarget,
-          size: (loaderTarget.edge ? 0.95 : 0.48) + random(seed + 21) * (loaderTarget.edge ? 0.72 : 0.58),
-          alpha: (loaderTarget.edge ? 0.72 : 0.3) + random(seed + 22) * (loaderTarget.edge ? 0.22 : 0.34),
+          size: isFillParticle
+            ? 0.3 + random(seed + 21) * 0.24
+            : (loaderTarget.edge ? 0.74 : 0.42) + random(seed + 21) * (loaderTarget.edge ? 0.46 : 0.38),
+          alpha: isFillParticle
+            ? 0.36 + random(seed + 22) * 0.18
+            : (loaderTarget.edge ? 0.68 : 0.4) + random(seed + 22) * (loaderTarget.edge ? 0.2 : 0.24),
           drift: (random(seed + 23) - 0.5) * 1.7,
           pulse: 0.12 + random(seed + 24) * 0.32,
           orbit: 0.7 + random(seed + 25) * 1.15,
@@ -1930,7 +2130,7 @@ function ShafeekPage() {
       const shapeIndex = Math.min(portfolioSections.length - 2, Math.floor(portfolioProgress));
       const shapeBlend = ease(portfolioProgress - shapeIndex);
       const activeColors = [
-        ["#ffffff", "#00e5ff", "#ff2bd6"],
+        ["#ffffff", "#f8fafc", "#a3a3a3"],
         ["#f8fafc", "#39ff14", "#00b3ff"],
         ["#ffffff", "#b026ff", "#ff3d71"],
         ["#f8fafc", "#00f5d4", "#ffe600"],
@@ -1977,6 +2177,8 @@ function ShafeekPage() {
           y: current.y + (next.y - current.y) * shapeBlend,
           z: current.z + (next.z - current.z) * shapeBlend,
           edge: current.edge || next.edge,
+          fill: current.fill || next.fill,
+          tone: shapeIndex === 0 && shapeBlend < 0.72 ? current.tone : "",
         };
         const loaderIn = ease(1 - loader);
         const x = particle.originX + (target.x - particle.originX) * loaderIn;
@@ -1993,21 +2195,70 @@ function ShafeekPage() {
           rotateZ,
           cameraDistance
         );
-        const px = centerX + projected.x * scale;
-        const py = centerY + projected.y * scale;
+        let px = centerX + projected.x * scale;
+        let py = centerY + projected.y * scale;
+
+        if (!shatterRef.current[particle.seed]) {
+          shatterRef.current[particle.seed] = { dx: 0, dy: 0 };
+        }
+        const shatter = shatterRef.current[particle.seed];
+        const mouse = mouseRef.current;
+        if (mouse.active) {
+          const distX = px - mouse.x;
+          const distY = py - mouse.y;
+          const dist = Math.sqrt(distX * distX + distY * distY);
+          const radius = 80;
+          if (dist < radius && dist > 0) {
+            const force = (1 - dist / radius) * 18;
+            const angle = Math.atan2(distY, distX);
+            shatter.dx += Math.cos(angle) * force;
+            shatter.dy += Math.sin(angle) * force;
+          }
+        }
+        shatter.dx *= 0.92;
+        shatter.dy *= 0.92;
+        if (Math.abs(shatter.dx) < 0.01) shatter.dx = 0;
+        if (Math.abs(shatter.dy) < 0.01) shatter.dy = 0;
+        px += shatter.dx;
+        py += shatter.dy;
+
         const alpha = particle.alpha * shimmer * loaderIn;
 
+        const portraitToneColors = {
+          skinHighlight: ["#ffd8b2", "#f6c49b", "#ffe3c4"],
+          skin: ["#e0a06f", "#d79263", "#efb27e"],
+          skinFill: ["#c88960", "#d99a6f", "#b97855"],
+          skinShadow: ["#b87955", "#c8865e", "#9f674a"],
+          hairLight: ["#6a4a37", "#7a553d", "#563c2f"],
+          hair: ["#3b2a22", "#4a3328", "#2f241f"],
+          frame: ["#9ca3af", "#6b7280", "#cbd5e1"],
+          dressHighlight: ["#7ea8d4", "#8fb8e0", "#6e9ac8"],
+          dress: ["#5580ab", "#4a72a0", "#6088b2"],
+          dressShadow: ["#3d6590", "#476d96", "#345a82"],
+          dressFill: ["#2e5478", "#38607f", "#284a6c"],
+        };
+        const portraitTone = target.tone && portraitToneColors[target.tone];
+        const portraitColor = portraitTone
+          ? portraitTone[Math.floor(random(particle.seed + 143) * portraitTone.length)]
+          : "";
+
         return {
-          alpha: target.edge ? Math.min(1, alpha * 1.32) : alpha,
-          color: target.edge
-            ? random(particle.seed + shapeIndex * 29) > 0.52
-              ? activeColors[1]
-              : activeColors[2]
-            : random(particle.seed + shapeIndex * 31) > 0.66
-              ? activeColors[1]
-              : random(particle.seed + shapeIndex * 37) > 0.72
-                ? activeColors[2]
-                : activeColors[0],
+          alpha: portraitColor
+            ? Math.min(1, alpha * (target.fill ? 1.12 : target.edge ? 1.62 : 1.34))
+            : target.edge
+              ? Math.min(1, alpha * 1.32)
+              : alpha,
+          color: portraitColor || (
+            target.edge
+              ? random(particle.seed + shapeIndex * 29) > 0.52
+                ? activeColors[1]
+                : activeColors[2]
+              : random(particle.seed + shapeIndex * 31) > 0.66
+                ? activeColors[1]
+                : random(particle.seed + shapeIndex * 37) > 0.72
+                  ? activeColors[2]
+                  : activeColors[0]
+          ),
           perspective: projected.perspective,
           px,
           py,
@@ -2021,7 +2272,9 @@ function ShafeekPage() {
         context.globalAlpha = Math.min(1, Math.max(0.08, particle.alpha));
         context.fillStyle = particle.color;
         const size = particle.size * (0.72 + particle.perspective * 0.42);
-        context.fillRect(particle.px, particle.py, size, size);
+        context.beginPath();
+        context.arc(particle.px, particle.py, size * 0.5, 0, Math.PI * 2);
+        context.fill();
       });
 
       for (let index = 0; index < 42; index += 1) {
@@ -2042,14 +2295,31 @@ function ShafeekPage() {
       animationFrame = window.requestAnimationFrame(draw);
     };
 
-    createParticles();
+    const handleMouseMove = (event) => {
+      mouseRef.current.x = event.clientX;
+      mouseRef.current.y = event.clientY;
+      mouseRef.current.active = true;
+    };
+    const handleMouseLeave = () => {
+      mouseRef.current.active = false;
+    };
+
     resize();
-    draw();
+    loadPortraitTargets().then((portraitTargets) => {
+      if (isDisposed) return;
+      createParticles(portraitTargets);
+      draw();
+    });
     window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
+      isDisposed = true;
       window.cancelAnimationFrame(animationFrame);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
 

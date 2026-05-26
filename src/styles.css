@@ -1365,8 +1365,10 @@ nav a:hover {
 }
 
 .home-capabilities {
+  --capability-sticky-top: clamp(78px, 5vw, 102px);
   --capability-gap: clamp(18px, 2vw, 28px);
   --capability-width: min(1560px, calc(100vw - clamp(32px, 6vw, 96px)));
+  position: relative;
   z-index: 2;
   min-height: auto;
   margin-top: -11vh;
@@ -1377,32 +1379,21 @@ nav a:hover {
 }
 
 .capability-sticky {
-  position: sticky;
-  top: 78px;
+  position: relative;
   display: grid;
-  grid-template-rows: auto auto;
-  align-content: center;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: stretch;
   justify-items: center;
-  gap: clamp(18px, 3vw, 34px);
-  height: calc(100vh - 78px);
-  min-height: 620px;
-  padding: clamp(28px, 4vw, 52px) clamp(16px, 3vw, 48px);
+  gap: clamp(14px, 2vw, 26px);
+  height: calc(100svh - var(--capability-sticky-top));
+  min-height: min(620px, calc(100svh - var(--capability-sticky-top)));
+  padding: clamp(18px, 3vw, 38px) clamp(16px, 3vw, 48px) clamp(22px, 3vw, 42px);
   overflow: hidden;
   border-radius: 34px 34px 0 0;
   background: var(--background);
-}
-
-@media (min-width: 861px) {
-  .home-capabilities.is-scroll-sticky {
-    padding-top: calc(100vh - 78px);
-  }
-
-  .home-capabilities.is-scroll-sticky .capability-sticky {
-    position: fixed;
-    right: 0;
-    left: 0;
-    z-index: 30;
-  }
+  z-index: 2;
+  transform: translate3d(0, var(--capability-pin-offset, 0px), 0);
+  will-change: transform;
 }
 
 .capability-scroll-space {
@@ -1412,10 +1403,13 @@ nav a:hover {
 
 .capability-viewport {
   position: relative;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
   width: var(--capability-width);
   max-width: 100%;
   overflow: hidden;
-  padding: 8px 0 44px;
+  padding: 8px 0 38px;
   background-image:
     linear-gradient(var(--accent), var(--accent)),
     linear-gradient(color-mix(in srgb, var(--muted-foreground) 18%, transparent), color-mix(in srgb, var(--muted-foreground) 18%, transparent));
@@ -1447,6 +1441,57 @@ nav a:hover {
   bottom: 34px;
   width: min(12vw, 150px);
   background: linear-gradient(270deg, var(--background), transparent);
+}
+
+.capability-meter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: min(240px, 52vw);
+  height: 22px;
+  margin-top: -22px;
+}
+
+.capability-meter::before,
+.capability-meter::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+
+.capability-meter::before {
+  background: color-mix(in srgb, var(--muted-foreground) 24%, transparent);
+}
+
+.capability-meter::after {
+  right: auto;
+  width: calc((100% - 20px) * var(--meter-progress, 0));
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--teal) 76%, var(--accent)));
+  transition: width 180ms ease;
+}
+
+.capability-meter span {
+  position: relative;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  border: 2px solid color-mix(in srgb, var(--muted-foreground) 34%, var(--background));
+  border-radius: 50%;
+  background: var(--background);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.capability-meter span.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  transform: scale(1.28);
 }
 
 .swipe-gesture-indicator {
@@ -1650,6 +1695,121 @@ nav a:hover {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.home-solution {
+  position: relative;
+  z-index: 4;
+  overflow: hidden;
+  margin-top: clamp(-120px, -8vw, -72px);
+  padding-top: clamp(96px, 10vw, 150px);
+  border-radius: 34px 34px 0 0;
+  background:
+    linear-gradient(180deg, var(--background), color-mix(in srgb, var(--muted) 50%, var(--background))),
+    radial-gradient(circle at 14% 20%, color-mix(in srgb, var(--teal) 12%, transparent), transparent 24rem);
+  box-shadow: 0 -28px 70px rgba(24, 24, 27, 0.12);
+}
+
+.home-solution::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--foreground) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--foreground) 8%, transparent) 1px, transparent 1px);
+  background-position: center;
+  background-size: 36px 36px;
+  mask-image: linear-gradient(180deg, transparent, #000 20%, #000 78%, transparent);
+}
+
+.home-solution .section-heading,
+.solution-mechanism-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.solution-mechanism-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 2vw, 22px);
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.solution-mechanism-card {
+  position: relative;
+  min-height: 260px;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--foreground) 12%, var(--border));
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--card) 84%, transparent), color-mix(in srgb, var(--muted) 58%, transparent));
+  box-shadow: none;
+}
+
+.solution-mechanism-card::before {
+  content: "";
+  position: absolute;
+  top: 34px;
+  right: -38px;
+  width: 112px;
+  height: 112px;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  border-radius: 999px;
+  opacity: 0.45;
+}
+
+.solution-mechanism-card::after {
+  content: "";
+  position: absolute;
+  right: 24px;
+  bottom: 0;
+  left: 24px;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--teal) 76%, var(--accent)));
+  transform: scaleX(0.28);
+  transform-origin: left;
+  transition: transform 220ms ease;
+}
+
+.solution-mechanism-card:hover::after {
+  transform: scaleX(1);
+}
+
+.solution-mechanism-card .ui-card-header,
+.solution-mechanism-card .ui-card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.solution-mechanism-card .ui-card-header {
+  gap: 22px;
+}
+
+.solution-mechanism-card .ui-card-header span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--border));
+  border-radius: 50%;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 900;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.solution-mechanism-card h3 {
+  font-size: 1.02rem;
+  font-weight: 680;
+}
+
+.solution-mechanism-card p {
+  font-size: 0.92rem;
+  line-height: 1.68;
 }
 
 .home-process {
@@ -3006,6 +3166,7 @@ label {
   .service-grid,
   .all-services,
   .value-grid,
+  .solution-mechanism-grid,
   .process-grid,
   .about-storyline,
   .services-grid-redesign {
@@ -3221,6 +3382,10 @@ label {
     display: inline-flex;
   }
 
+  .capability-meter {
+    display: none;
+  }
+
   .capability-viewport.is-swipe-active .swipe-gesture-indicator {
     opacity: 1;
     transform: translateX(50%) translateY(0);
@@ -3261,6 +3426,21 @@ label {
     margin-top: 0;
     padding: 58px clamp(18px, 5vw, 34px);
     border-radius: 24px 24px 0 0;
+  }
+
+  .home-solution {
+    margin-top: 0;
+    padding: 58px clamp(18px, 5vw, 34px);
+    border-radius: 24px 24px 0 0;
+  }
+
+  .solution-mechanism-grid {
+    gap: 14px;
+    max-width: 680px;
+  }
+
+  .solution-mechanism-card {
+    min-height: 230px;
   }
 
   .process-grid {
@@ -3804,6 +3984,7 @@ label {
   }
 
   .home-capabilities,
+  .home-solution,
   .home-process,
   .home-stack {
     padding-top: 46px;
@@ -3849,6 +4030,15 @@ label {
 
   .process-grid {
     gap: 12px;
+  }
+
+  .solution-mechanism-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .solution-mechanism-card {
+    min-height: auto;
   }
 
   .home-cta {
