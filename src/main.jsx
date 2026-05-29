@@ -1509,6 +1509,7 @@ function Field({ label, value, onChange, textarea = false }) {
 
 function ShafeekPage() {
   const pageRef = useRef(null);
+  const storyRef = useRef(null);
   const canvasRef = useRef(null);
   const particlesRef = useRef([]);
   const progressRef = useRef(0);
@@ -1580,9 +1581,9 @@ function ShafeekPage() {
     {
       eyebrow: "Selected Work",
       title: "Products with real systems",
-      body: "Key projects include GlobalChain Finance, an AI-integrated DeFi and tokenised real estate platform, KCG Warehouse Management System, Leacon CRM, Haya App, WADIM, MMRF App, Aqua Dip, CPS, TJSV, and Ralo Delivery System.",
+      body: "Key projects include GlobalChain Finance, a real-world asset tokenisation platform, KCG Warehouse Management System, CampusConnect, Ridex Vehicle Rental Management, Haya App, WADIM, MMRF App, Aqua Dip, CPS, and TJSV.",
       meta: "shafeekes999@gmail.com | +91 7012808718",
-      items: ["GlobalChain Finance", "KCG Warehouse Management", "Leacon CRM", "Haya App", "WADIM", "MMRF App", "Aqua Dip", "CPS", "TJSV", "Ralo Delivery System", "Basma School Management", "Career Explorer"],
+      items: ["GlobalChain Finance", "KCG Warehouse Management", "CampusConnect", "Ridex Vehicle Rental Management", "Haya App", "WADIM", "MMRF App", "Aqua Dip", "CPS", "TJSV", "Basma School Management", "Career Explorer"],
     },
     {
       eyebrow: "More",
@@ -1593,21 +1594,132 @@ function ShafeekPage() {
     },
   ];
 
+  const proofStats = [
+    ["7+", "Years building production web systems"],
+    ["30+", "Web, ecommerce, CRM, and business tools"],
+    ["Full stack", "Laravel, React, WordPress, APIs, and automation"],
+    ["Thrissur", "Available for projects and collaborations"],
+  ];
+
+  const featuredProjects = [
+    {
+      title: "GlobalChain Finance",
+      type: "Real-world asset tokenisation platform",
+      summary: "Production-oriented RWA tokenisation and digital investment platform with marketplace, wallet auth, KYC, asset submission, GFC token presale, and admin operations.",
+      role: "Full stack architecture, Next.js product build, Web3 integration, API/database workflows",
+      stack: ["Next.js", "TypeScript", "PostgreSQL", "Solidity", "Hardhat", "Wagmi", "Viem"],
+      outcome: "Built a connected platform foundation linking business data, investor journeys, admin review flows, and blockchain-backed asset participation.",
+    },
+    {
+      title: "KCG Warehouse Management",
+      type: "Construction warehouse management system",
+      summary: "Centralized inventory platform for a UAE construction company covering materials, equipment, supplier deliveries, site returns, stock adjustments, low-stock alerts, and project-specific tracking.",
+      role: "System planning, backend architecture, inventory workflows, admin dashboard, reporting",
+      stack: ["Laravel", "MySQL", "REST API", "Bootstrap", "JavaScript"],
+      outcome: "Replaced Excel-based tracking with real-time warehouse visibility across projects, divisions, suppliers, and site operations.",
+    },
+    {
+      title: "CampusConnect",
+      type: "International education CRM/admin system",
+      summary: "Laravel CRM for student recruitment and admissions workflows with leads, assignments, follow-ups, calls, documents, applications, offer letters, fees, CAS, visas, reports, country scoping, and master data.",
+      role: "Laravel module development, CRM workflows, dashboard analytics, reports, permissions, import/export features",
+      stack: ["Laravel 10", "Blade", "MySQL", "Spatie Permissions", "Yajra DataTables", "Maatwebsite Excel"],
+      outcome: "Centralized the admissions lifecycle from enquiry to application, offer, payment, CAS, visa, and reporting across countries, branches, and intakes.",
+    },
+    {
+      title: "Ridex Vehicle Rental Management",
+      type: "Vehicle rental operations system",
+      summary: "Production vehicle rental platform for browsing vehicles, managing bookings, admin operations, media/static assets, and live deployment workflows for ridexrentals.in.",
+      role: "Django development, booking flow fixes, frontend templates, deployment scripts, server operations",
+      stack: ["Django", "Python", "SQLite", "HTML", "CSS", "JavaScript", "Linux"],
+      outcome: "Built and maintained a live rental workflow with quick deployment scripts, local development tooling, backups, and production service management.",
+    },
+  ];
+
+  const skillGroups = [
+    {
+      title: "Product Development",
+      skills: ["Laravel", "React", "Next.js", "PHP", "JavaScript", "TypeScript"],
+    },
+    {
+      title: "CMS & Ecommerce",
+      skills: ["WordPress", "WooCommerce", "Shopify", "Custom themes", "Payment flows"],
+    },
+    {
+      title: "APIs & Backend",
+      skills: ["REST APIs", "GraphQL", "JWT Auth", "PostgreSQL", "MySQL", "TanStack Query"],
+    },
+    {
+      title: "Web3 Systems",
+      skills: ["Solidity", "Hardhat", "Ethers.js", "Wagmi", "Viem", "Smart contract flows"],
+    },
+    {
+      title: "AI Workflow",
+      skills: ["ChatGPT", "Claude AI", "GitHub Copilot", "Prompt engineering", "Automation"],
+    },
+    {
+      title: "Deployment & Growth",
+      skills: ["Vercel", "AWS", "cPanel", "CI/CD", "SEO", "Google Analytics"],
+    },
+  ];
+
+  const experienceTimeline = [
+    {
+      period: "Aug 2019 - Present",
+      role: "Senior Web Developer",
+      company: "Calpar Global",
+      detail: "Leading Laravel, WordPress, CRM, ecommerce, logistics, and school management system work from planning through production support.",
+    },
+    {
+      period: "2018 - 2019",
+      role: "Junior Web Developer",
+      company: "Calpar Global",
+      detail: "Built backend features, frontend screens, CMS websites, and integrations while supporting client delivery.",
+    },
+    {
+      period: "2017 - 2018",
+      role: "Junior PHP Developer",
+      company: "Early development work",
+      detail: "Started with PHP, MySQL, HTML, CSS, JavaScript, and practical business website development.",
+    },
+  ];
+
+  const caseStudies = [
+    {
+      title: "From Manual Operations to Connected Dashboards",
+      challenge: "KCG Construction needed to move warehouse operations away from Excel-based tracking while managing materials, equipment, supplier deliveries, site returns, low-stock items, and project allocations across UAE construction sites.",
+      approach: "Planned a centralized warehouse system with inventory dashboards, master data, incoming goods, stock adjustments, project-specific filtering, role-based access, reporting, and a roadmap for outgoing requests, approvals, VAT, quality control, and mobile site workflows.",
+      result: "Created a practical operating base for real-time inventory visibility, better project cost control, reduced material waste, and cleaner coordination between warehouse teams, site engineers, project managers, and finance.",
+    },
+    {
+      title: "Launching a Web3 Product Experience",
+      challenge: "GlobalChain Finance needed to combine RWA asset tokenisation, wallet authentication, KYC workflows, presale mechanics, marketplace browsing, and admin controls inside one production-oriented product.",
+      approach: "Built a Next.js and PostgreSQL platform with App Router APIs, wallet/Web3 flows, Solidity contracts, Hardhat tooling, asset submission, KYC review, presale tracking, and admin dashboards.",
+      result: "Created a full-stack foundation for asset-backed digital investment workflows, connecting user dashboards, marketplace activity, admin operations, and blockchain confirmations.",
+    },
+    {
+      title: "Modernizing Business Websites for Better Enquiries",
+      challenge: "Service pages were not clearly explaining offers or guiding visitors toward meaningful contact.",
+      approach: "Reworked page hierarchy, mobile layout, content blocks, performance, and contact paths.",
+      result: "A sharper digital presence with clearer service communication and easier enquiry flow.",
+    },
+  ];
+
   useEffect(() => {
-    const page = pageRef.current;
-    if (!page) return undefined;
+    const story = storyRef.current;
+    if (!story) return undefined;
 
     let frame = 0;
     const updateLaptop = () => {
       frame = 0;
-      const rect = page.getBoundingClientRect();
-      const scrollable = Math.max(1, page.offsetHeight - window.innerHeight);
+      const rect = story.getBoundingClientRect();
+      const scrollable = Math.max(1, story.offsetHeight - window.innerHeight);
       const progress = Math.min(1, Math.max(0, -rect.top / scrollable));
       const activeSection = Math.min(portfolioSections.length - 1, Math.floor(progress * portfolioSections.length));
       progressRef.current = progress;
       shapeTargetRef.current = activeSection;
       setActivePortfolioSection(activeSection);
-      page.style.setProperty("--laptop-open", progress.toFixed(3));
+      story.style.setProperty("--laptop-open", progress.toFixed(3));
     };
 
     const requestUpdate = () => {
@@ -2327,30 +2439,162 @@ function ShafeekPage() {
     <main className={`shafeek-page ${isLoading ? "is-loading" : ""}`} ref={pageRef}>
       <canvas className="shafeek-particle-canvas" ref={canvasRef} aria-hidden="true" />
       {isLoading && <div className="shafeek-loader" aria-label="Loading portfolio" />}
-      <section className="shafeek-portfolio-stage" aria-labelledby="shafeek-title">
-        <h1 id="shafeek-title" className="shafeek-hidden-title">Shafeek</h1>
-        <div className="portfolio-copy">
-          {portfolioSections.map((section, index) => (
-            <article className={activePortfolioSection === index ? "active" : ""} key={section.eyebrow}>
-              <span>{section.eyebrow}</span>
-              <h2>{section.title}</h2>
-              <p>{section.body}</p>
-              {section.items && (
-                <ul className="portfolio-skill-list">
-                  {section.items.map((item) => (
+      <div className="shafeek-scroll-story" ref={storyRef}>
+        <section className="shafeek-portfolio-stage" aria-labelledby="shafeek-title">
+          <h1 id="shafeek-title" className="shafeek-hidden-title">Shafeek</h1>
+          <div className="portfolio-copy">
+            {portfolioSections.map((section, index) => (
+              <article className={activePortfolioSection === index ? "active" : ""} key={section.eyebrow}>
+                <span>{section.eyebrow}</span>
+                <h2>{section.title}</h2>
+                <p>{section.body}</p>
+                {section.items && (
+                  <ul className="portfolio-skill-list">
+                    {section.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+                <strong>{section.meta}</strong>
+              </article>
+            ))}
+          </div>
+          <div className="portfolio-progress" aria-hidden="true">
+            {portfolioSections.map((section, index) => (
+              <span className={activePortfolioSection === index ? "active" : ""} key={section.eyebrow} />
+            ))}
+          </div>
+          <div className="shafeek-hero-actions">
+            <a href="#projects">Projects</a>
+            <a href="#contact">Contact</a>
+            <a href="mailto:shafeekes999@gmail.com?subject=Resume%20request">Resume</a>
+          </div>
+        </section>
+      </div>
+      <section className="shafeek-content" aria-label="Shafeek portfolio details">
+        <div className="shafeek-proof-grid">
+          {proofStats.map(([value, label]) => (
+            <div className="shafeek-proof-card" key={value}>
+              <strong>{value}</strong>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <section className="shafeek-section" id="projects">
+          <div className="shafeek-section-heading">
+            <span>Selected Work</span>
+            <h2>Projects that show the kind of systems I build</h2>
+            <p>Sample content for now. Replace these with final project descriptions, live links, screenshots, metrics, and client-approved details.</p>
+          </div>
+          <div className="shafeek-project-grid">
+            {featuredProjects.map((project) => (
+              <article className="shafeek-project-card" key={project.title}>
+                <div>
+                  <span>{project.type}</span>
+                  <h3>{project.title}</h3>
+                  <p>{project.summary}</p>
+                </div>
+                <dl>
+                  <div>
+                    <dt>Role</dt>
+                    <dd>{project.role}</dd>
+                  </div>
+                  <div>
+                    <dt>Outcome</dt>
+                    <dd>{project.outcome}</dd>
+                  </div>
+                </dl>
+                <ul>
+                  {project.stack.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
-              )}
-              <strong>{section.meta}</strong>
-            </article>
-          ))}
-        </div>
-        <div className="portfolio-progress" aria-hidden="true">
-          {portfolioSections.map((section, index) => (
-            <span className={activePortfolioSection === index ? "active" : ""} key={section.eyebrow} />
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="shafeek-section">
+          <div className="shafeek-section-heading">
+            <span>Capabilities</span>
+            <h2>Skills grouped by the value they bring</h2>
+          </div>
+          <div className="shafeek-skill-grid">
+            {skillGroups.map((group) => (
+              <article className="shafeek-skill-card" key={group.title}>
+                <h3>{group.title}</h3>
+                <ul>
+                  {group.skills.map((skill) => (
+                    <li key={skill}>{skill}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="shafeek-section shafeek-about-section">
+          <div className="shafeek-section-heading">
+            <span>About</span>
+            <h2>A practical developer with a product mindset</h2>
+          </div>
+          <div className="shafeek-about-copy">
+            <p>
+              I am a full stack developer from Thrissur, Kerala, focused on building useful, maintainable digital products for businesses. My work usually sits between engineering, product planning, UI implementation, and production troubleshooting.
+            </p>
+            <p>
+              I like turning unclear operational problems into structured systems: CRMs, ecommerce stores, dashboards, APIs, Web3 flows, and automation-assisted workflows that teams can actually use every day.
+            </p>
+          </div>
+        </section>
+
+        <section className="shafeek-section">
+          <div className="shafeek-section-heading">
+            <span>Experience</span>
+            <h2>Professional timeline</h2>
+          </div>
+          <div className="shafeek-timeline">
+            {experienceTimeline.map((item) => (
+              <article className="shafeek-timeline-item" key={`${item.period}-${item.role}`}>
+                <span>{item.period}</span>
+                <h3>{item.role}</h3>
+                <strong>{item.company}</strong>
+                <p>{item.detail}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="shafeek-section">
+          <div className="shafeek-section-heading">
+            <span>Case Studies</span>
+            <h2>Replace these with real project stories</h2>
+          </div>
+          <div className="shafeek-case-grid">
+            {caseStudies.map((study) => (
+              <article className="shafeek-case-card" key={study.title}>
+                <h3>{study.title}</h3>
+                <p><strong>Challenge:</strong> {study.challenge}</p>
+                <p><strong>Approach:</strong> {study.approach}</p>
+                <p><strong>Result:</strong> {study.result}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="shafeek-contact-band" id="contact">
+          <div>
+            <span>Available for selected work</span>
+            <h2>Have a product, website, API, or automation idea?</h2>
+            <p>Send a short brief and I will help shape the next practical step.</p>
+          </div>
+          <div className="shafeek-contact-actions">
+            <a href="mailto:shafeekes999@gmail.com">shafeekes999@gmail.com</a>
+            <a href="tel:+917012808718">+91 7012808718</a>
+            <a href="https://wa.me/917012808718">WhatsApp</a>
+          </div>
+        </section>
       </section>
     </main>
   );

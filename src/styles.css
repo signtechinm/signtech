@@ -154,13 +154,18 @@ html.is-page-scrolling * {
 .shafeek-page {
   --laptop-open: 0;
   position: relative;
-  min-height: 980vh;
+  min-height: 100vh;
   overflow: clip;
   color: #f8fafc;
   background:
     radial-gradient(circle at 78% 35%, rgba(0, 229, 255, 0.16), transparent 28%),
     radial-gradient(circle at 86% 62%, rgba(255, 43, 214, 0.12), transparent 24%),
     #000000;
+}
+
+.shafeek-scroll-story {
+  position: relative;
+  min-height: 980vh;
 }
 
 .shafeek-page.is-loading {
@@ -255,8 +260,8 @@ html.is-page-scrolling * {
   max-width: 420px;
   margin-bottom: 18px;
   color: #ffffff;
-  font-size: clamp(2.6rem, 6vw, 5.7rem);
-  line-height: 0.92;
+  font-size: clamp(2.2rem, 4.9vw, 4.8rem);
+  line-height: 0.96;
 }
 
 .portfolio-copy p {
@@ -299,7 +304,7 @@ html.is-page-scrolling * {
 }
 
 .portfolio-progress {
-  position: fixed;
+  position: absolute;
   left: clamp(24px, 7vw, 86px);
   bottom: 42px;
   display: flex;
@@ -317,6 +322,289 @@ html.is-page-scrolling * {
 .portfolio-progress span.active {
   width: 56px;
   background: #ffffff;
+}
+
+.shafeek-hero-actions {
+  position: absolute;
+  right: clamp(24px, 7vw, 86px);
+  bottom: 28px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  max-width: min(42vw, 520px);
+}
+
+.shafeek-hero-actions a,
+.shafeek-contact-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  padding: 0 15px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.shafeek-hero-actions a:first-child,
+.shafeek-contact-actions a:first-child {
+  border-color: rgba(0, 245, 212, 0.62);
+  background: rgba(0, 245, 212, 0.14);
+}
+
+.shafeek-hero-actions a:hover,
+.shafeek-contact-actions a:hover {
+  border-color: rgba(255, 255, 255, 0.48);
+  background: rgba(255, 255, 255, 0.13);
+  transform: translateY(-2px);
+}
+
+.shafeek-content {
+  position: relative;
+  z-index: 2;
+  padding: clamp(70px, 9vw, 132px) clamp(18px, 5vw, 72px) clamp(44px, 7vw, 90px);
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0), #05070a 94px),
+    linear-gradient(135deg, rgba(0, 245, 212, 0.08), transparent 36%),
+    #05070a;
+}
+
+.shafeek-proof-grid,
+.shafeek-project-grid,
+.shafeek-skill-grid,
+.shafeek-case-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.shafeek-proof-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 1180px;
+  margin: 0 auto clamp(74px, 9vw, 128px);
+}
+
+.shafeek-proof-card,
+.shafeek-project-card,
+.shafeek-skill-card,
+.shafeek-timeline-item,
+.shafeek-case-card {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.shafeek-proof-card {
+  min-height: 132px;
+  padding: 22px;
+}
+
+.shafeek-proof-card strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #ffffff;
+  font-size: clamp(1.9rem, 4vw, 3.7rem);
+  line-height: 0.92;
+}
+
+.shafeek-proof-card span,
+.shafeek-section-heading span,
+.shafeek-project-card > div > span,
+.shafeek-timeline-item > span,
+.shafeek-contact-band span {
+  color: #8be9df;
+  font-size: 0.74rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.shafeek-section {
+  max-width: 1180px;
+  margin: 0 auto clamp(82px, 10vw, 144px);
+}
+
+.shafeek-section-heading {
+  max-width: 740px;
+  margin-bottom: 28px;
+}
+
+.shafeek-section-heading h2,
+.shafeek-contact-band h2 {
+  margin: 10px 0 14px;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 3.7vw, 3.8rem);
+  line-height: 1.03;
+}
+
+.shafeek-section-heading p,
+.shafeek-project-card p,
+.shafeek-about-copy p,
+.shafeek-timeline-item p,
+.shafeek-case-card p,
+.shafeek-contact-band p {
+  color: #c9d1d9;
+}
+
+.shafeek-project-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.shafeek-project-card {
+  display: grid;
+  align-content: space-between;
+  min-height: 440px;
+  padding: clamp(22px, 3vw, 34px);
+}
+
+.shafeek-project-card h3,
+.shafeek-skill-card h3,
+.shafeek-timeline-item h3,
+.shafeek-case-card h3 {
+  color: #ffffff;
+  font-size: clamp(1.28rem, 2vw, 1.9rem);
+  line-height: 1.08;
+}
+
+.shafeek-project-card dl {
+  display: grid;
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.shafeek-project-card dt {
+  margin-bottom: 4px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.shafeek-project-card dd {
+  margin: 0;
+  color: #c9d1d9;
+  line-height: 1.55;
+}
+
+.shafeek-project-card ul,
+.shafeek-skill-card ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shafeek-project-card li,
+.shafeek-skill-card li {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.shafeek-skill-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.shafeek-skill-card {
+  padding: 24px;
+}
+
+.shafeek-about-section {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: start;
+}
+
+.shafeek-about-copy {
+  display: grid;
+  gap: 18px;
+  padding-top: 8px;
+}
+
+.shafeek-about-copy p {
+  margin: 0;
+  font-size: clamp(1rem, 1.5vw, 1.18rem);
+}
+
+.shafeek-timeline {
+  display: grid;
+  gap: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  padding-left: 24px;
+}
+
+.shafeek-timeline-item {
+  position: relative;
+  padding: 24px;
+}
+
+.shafeek-timeline-item::before {
+  position: absolute;
+  top: 28px;
+  left: -31px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #05070a;
+  border-radius: 999px;
+  background: #00f5d4;
+  content: "";
+}
+
+.shafeek-timeline-item strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.shafeek-case-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.shafeek-case-card {
+  padding: 24px;
+}
+
+.shafeek-case-card p strong {
+  color: #ffffff;
+}
+
+.shafeek-contact-band {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  gap: 28px;
+  align-items: center;
+  max-width: 1180px;
+  margin: 0 auto;
+  border: 1px solid rgba(0, 245, 212, 0.28);
+  border-radius: 8px;
+  padding: clamp(26px, 5vw, 54px);
+  background:
+    linear-gradient(135deg, rgba(0, 245, 212, 0.16), rgba(255, 61, 113, 0.1)),
+    rgba(255, 255, 255, 0.06);
+}
+
+.shafeek-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 @keyframes shafeekLoaderFade {
@@ -4267,6 +4555,10 @@ label {
 
 @media (max-width: 860px) {
   .shafeek-page {
+    min-height: 100vh;
+  }
+
+  .shafeek-scroll-story {
     min-height: 980vh;
   }
 
@@ -4293,8 +4585,8 @@ label {
   .portfolio-copy h2 {
     max-width: 78vw;
     margin-bottom: 8px;
-    font-size: clamp(1.35rem, 7.6vw, 2.25rem);
-    line-height: 0.94;
+    font-size: clamp(1.22rem, 6.6vw, 1.95rem);
+    line-height: 1;
   }
 
   .portfolio-copy p {
@@ -4338,5 +4630,101 @@ label {
 
   .portfolio-progress span.active {
     width: 34px;
+  }
+
+  .shafeek-hero-actions {
+    right: 14px;
+    bottom: 14px;
+    max-width: calc(100vw - 120px);
+    gap: 6px;
+  }
+
+  .shafeek-hero-actions a {
+    min-height: 34px;
+    padding: 0 9px;
+    font-size: 0.66rem;
+  }
+
+  .shafeek-content {
+    padding: 58px 14px 42px;
+  }
+
+  .shafeek-proof-grid,
+  .shafeek-project-grid,
+  .shafeek-skill-grid,
+  .shafeek-case-grid,
+  .shafeek-about-section,
+  .shafeek-contact-band {
+    grid-template-columns: 1fr;
+  }
+
+  .shafeek-proof-grid {
+    gap: 10px;
+    margin-bottom: 64px;
+  }
+
+  .shafeek-proof-card {
+    min-height: auto;
+    padding: 18px;
+  }
+
+  .shafeek-section {
+    margin-bottom: 72px;
+  }
+
+  .shafeek-section-heading {
+    margin-bottom: 18px;
+  }
+
+  .shafeek-section-heading h2,
+  .shafeek-contact-band h2 {
+    font-size: clamp(1.45rem, 8.2vw, 2.35rem);
+    line-height: 1.04;
+  }
+
+  .shafeek-section-heading p,
+  .shafeek-project-card p,
+  .shafeek-about-copy p,
+  .shafeek-timeline-item p,
+  .shafeek-case-card p,
+  .shafeek-contact-band p {
+    font-size: 0.92rem;
+    line-height: 1.58;
+  }
+
+  .shafeek-project-card {
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .shafeek-project-card dl {
+    margin: 18px 0;
+  }
+
+  .shafeek-skill-card,
+  .shafeek-timeline-item,
+  .shafeek-case-card {
+    padding: 20px;
+  }
+
+  .shafeek-timeline {
+    padding-left: 18px;
+  }
+
+  .shafeek-timeline-item::before {
+    left: -25px;
+  }
+
+  .shafeek-contact-band {
+    gap: 18px;
+    padding: 22px;
+  }
+
+  .shafeek-contact-actions {
+    justify-content: flex-start;
+  }
+
+  .shafeek-contact-actions a {
+    width: 100%;
   }
 }
